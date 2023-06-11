@@ -18,7 +18,7 @@ you need `git`, `gcc`, `zip`, and `tar`. you also need `ar` if you're on linux.
 #### insert_dylib
 you have to build this yourself.
 
-`git clone https://github.com/tyilo/insert_dylib.git && cd insert_dylib/insert_dylib && gcc main.c && chmod +x a.out && sudo mv a.out /usr/local/bin/insert_dylib`
+`git clone https://github.com/tyilo/insert_dylib.git && cd insert_dylib/insert_dylib && gcc main.c && chmod +x a.out && sudo mv a.out /usr/local/bin/insert_dylib && cd ../..`
 
 if you're on macos, that should be everything you need to install. skip to the installation script.
 
