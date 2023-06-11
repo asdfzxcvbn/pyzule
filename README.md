@@ -4,7 +4,7 @@ an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. windows 
 ## features
 not many right now, but will probably add some in the future if i need them.
 
-- inject deb, dylib, framework, bundle, and appex files and automatically fix any dependency on CydiaSubstrate
+- inject deb, dylib, framework, bundle, and appex files and automatically fix dependencies when possible
 - remove UISupportedDevices
 - remove watch app
 
