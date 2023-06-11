@@ -32,6 +32,11 @@ also installed by default on macos.
 
 `sudo wget https://cdn.discordapp.com/attachments/1105232452529700985/1117486650184978433/ldid -O /usr/local/bin/ldid && sudo chmod +x /usr/local/bin/ldid`
 
+#### otool
+ALSO installed by default on macos. (who could've guessed?!)
+
+`sudo wget https://cdn.discordapp.com/attachments/1105232452529700985/1117486650533085275/otool -O /usr/local/bin/otool && sudo chmod +x /usr/local/bin/otool`
+
 ### installation script
 required. will install pyzule itself.
 
