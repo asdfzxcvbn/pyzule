@@ -12,8 +12,11 @@ not many right now, but will probably add some in the future if i need them.
 
 ### requirements
 
+### cli tools
+you need `git`, `gcc`, `zip`, and `tar`. you also need `ar` if you're on linux.
+
 #### insert_dylib
-you have to build this yourself. make sure you have `git` and `gcc` installed.
+you have to build this yourself.
 
 `git clone https://github.com/tyilo/insert_dylib.git && cd insert_dylib/insert_dylib && gcc main.c && chmod +x a.out && sudo mv a.out /usr/local/bin/insert_dylib`
 
