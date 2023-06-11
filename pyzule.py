@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser(description="an azule \"clone\" written in pyth
 parser.add_argument("-i", metavar="ipa", type=str, required=True,
                     help="the ipa to patch")
 parser.add_argument("-o", metavar="output", type=str, required=True,
-                    help="the name of the patched ipa that will be outputted")
+                    help="the name of the patched ipa that will be created")
 parser.add_argument("-f", metavar="files", nargs="+", type=str,
                     help="tweak files to inject into the ipa")
 parser.add_argument("-u", action="store_true",
