@@ -8,6 +8,25 @@ not many right now, but will probably add some in the future if i need them.
 - remove UISupportedDevices
 - remove watch app
 
+## usage
+you can get usage info with `pyzule -h`.
+
+```
+$ pyzule -h
+usage: pyzule [-h] -i ipa -o output [-f files [files ...]] [-u] [-w]
+
+an azule "clone" written in python3.
+
+options:
+  -h, --help            show this help message and exit
+  -i ipa                the ipa to patch
+  -o output             the name of the patched ipa that will be created
+  -f files [files ...]  tweak files to inject into the ipa
+  -u                    remove UISupportedDevices
+  -w                    remove watch app
+
+```
+
 ## installation
 
 ### requirements
