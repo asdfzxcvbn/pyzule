@@ -12,7 +12,7 @@ not many right now, but will probably add some in the future if i need them.
 
 ### requirements
 
-### cli tools
+#### cli tools
 you need `git`, `gcc`, `zip`, and `tar`. you also need `ar` if you're on linux.
 
 #### insert_dylib
