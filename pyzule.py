@@ -119,7 +119,7 @@ if args.f:
         run(["ldid", "-S", dylib], stdout=DEVNULL, check=True)
         deps_temp = run(["otool", "-L", dylib], capture_output=True, text=True, check=True).stdout.strip().split("\n")[2:]
         for ind, dep in enumerate(deps_temp):
-            if "(architecture arm64" in dep:
+            if "(architecture " in dep:
                 deps_temp = deps_temp[:ind]
                 break
 
@@ -144,19 +144,21 @@ if args.f:
 
     print("[*] injecting..")
     for d in dylibs:
-        run(["insert_dylib", "--inplace", "--no-strip-codesig", f"@rpath/{d}", f"{APP_PATH}/{BINARY}"], stdout=DEVNULL, check=True)
-        copyfile(d, f"{APP_PATH}/Frameworks/{d}")
-        print(f"[*] successfully injected {d}")
+        bn = os.path.basename(d)
+        run(["insert_dylib", "--inplace", "--no-strip-codesig", f"@rpath/{bn}", f"{APP_PATH}/{BINARY}"], stdout=DEVNULL, check=True)
+        copyfile(d, f"{APP_PATH}/Frameworks/{bn}")
+        print(f"[*] successfully injected {bn}")
     for tweak in args.f:
+        bn = os.path.basename(tweak)
         if tweak.endswith(".framework"):
-            copytree(tweak, f"{APP_PATH}/Frameworks/{tweak}")
-            print(f"[*] successfully injected {tweak}")
+            copytree(tweak, f"{APP_PATH}/Frameworks/{bn}")
+            print(f"[*] successfully injected {bn}")
         elif tweak.endswith(".bundle"):
-            copytree(tweak, f"{APP_PATH}/{tweak}")
-            print(f"[*] successfully copied {tweak} to app root")
+            copytree(tweak, f"{APP_PATH}/{bn}")
+            print(f"[*] successfully copied {bn} to app root")
         elif tweak.endswith(".appex"):
-            copytree(tweak, f"{APP_PATH}/PlugIns/{tweak}")
-            print(f"[*] successfully copied {tweak} to PlugIns")
+            copytree(tweak, f"{APP_PATH}/PlugIns/{bn}")
+            print(f"[*] successfully copied {bn} to PlugIns")
     changed = 1
 
     for r in remove:
@@ -198,8 +200,10 @@ if not changed:
 # zipping everything back into an ipa
 os.chdir(EXTRACT_DIR)
 print("[*] generating ipa..")
-run(["zip", "-3", "-r", f"{WORKING_DIR}/{args.o}", "Payload"], stdout=DEVNULL, check=True)
+run(["zip", "-3", "-r", os.path.basename(args.o), "Payload"], stdout=DEVNULL, check=True)
 
 # cleanup when everything is done
 os.chdir(WORKING_DIR)
+move(f"{EXTRACT_DIR}/{os.path.basename(args.o)}", args.o)
+print(f"[*] generated ipa at {args.o}")
 cleanup(EXTRACT_DIR, True)
