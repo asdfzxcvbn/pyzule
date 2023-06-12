@@ -206,7 +206,7 @@ if not changed:
 # zipping everything back into an ipa
 os.chdir(EXTRACT_DIR)
 print("[*] generating ipa..")
-run(["zip", "-3", "-r", os.path.basename(args.o), "Payload"], stdout=DEVNULL, check=True)
+run(["zip", "-qq", "-r", os.path.basename(args.o), "Payload"], stdout=DEVNULL, check=True)
 
 # cleanup when everything is done
 os.chdir(WORKING_DIR)
