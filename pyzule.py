@@ -78,6 +78,7 @@ if args.f:
     dylibs = [d for d in args.f if d.endswith(".dylib")]
     id = dylibs + [f for f in args.f if ".framework" in f]
     remove = []
+    substrate_injected = 0
 
     # extracting all debs
     for deb in args.f:
@@ -124,9 +125,16 @@ if args.f:
                 deps_temp = deps_temp[:ind]
                 break
 
-        deps = [dep.split()[0] for dep in deps_temp if dep.startswith("\t/Library/")] + [dep.split()[0] for dep in deps_temp if dep.startswith("\t/usr/lib/")]
+        deps = [dep.split()[0] for dep in deps_temp if dep.startswith("\t/Library/") or dep.startswith("\t/usr/lib")]
 
         for dep in deps:
+            if "substrate" in dep.lower():
+                run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)
+                run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)  # some dylibs have this
+                if not substrate_injected:
+                    copytree(f"{USER_DIR}/CydiaSubstrate.framework", f"{APP_PATH}/Frameworks/CydiaSubstrate.framework")
+                    print("[*] injected CydiaSubstrate.framework and fixed dependencies")
+                    substrate_injected = 1
             for known in id:
                 if known in dep:
                     bn = os.path.basename(dep)
@@ -138,10 +146,6 @@ if args.f:
                         fni = dep.find(f"{bn}.framework/{bn}")
                         run(["install_name_tool", "-change", f"{dep[:fni]}{bn}.framework/{bn}", f"@rpath/{bn}.framework/{bn}", dylib], check=True)
                         print(f"[*] fixed dependency in {dylib}: {dep[:fni]}{bn}.framework/{bn} -> @rpath/{bn}.framework/{bn}")
-
-        run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)
-        run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)  # some dylibs have this
-    copytree(f"{USER_DIR}/CydiaSubstrate.framework", f"{APP_PATH}/Frameworks/CydiaSubstrate.framework")
 
     print("[*] injecting..")
     for d in dylibs:
