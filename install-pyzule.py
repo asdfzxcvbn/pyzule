@@ -11,7 +11,7 @@ if osname() == "Windows":
     sys.exit(1)
 
 if not path.exists(USER_DIR):
-    os.makedirs(USER_DIR)
+    makedirs(USER_DIR)
 
 if path.exists(SUBSTRATE):
     rmtree(SUBSTRATE)
