@@ -18,10 +18,6 @@ system = system()
 if system == "Windows":
     print("windows is not currently supported.")
     sys.exit(1)
-elif system == "Linux":
-    otool = "llvm-otool"
-else:
-    otool = "otool"
 
 # set/get all args
 parser = argparse.ArgumentParser(description="an azule \"clone\" written in python3.")
