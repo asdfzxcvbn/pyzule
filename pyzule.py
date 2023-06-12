@@ -114,12 +114,9 @@ if args.f:
         print(f"[*] extracted {deb} successfully")
         deb_counter += 1
 
-    # removing codesign from all dylibs
+    # remove codesign + fix all dependencies
     for dylib in dylibs:
         run(["ldid", "-S", dylib], stdout=DEVNULL, check=True)
-
-    # fix all dependencies (except substrate lol)
-    for dylib in dylibs:
         deps_temp = run(["otool", "-L", dylib], capture_output=True, text=True, check=True).stdout.strip().split("\n")[2:]
         for ind, dep in enumerate(deps_temp):
             if "(architecture arm64" in dep:
@@ -141,8 +138,6 @@ if args.f:
                         run(["install_name_tool", "-change", f"{dep[:fni]}{bn}.framework/{bn}", f"@rpath/{bn}.framework/{bn}", dylib], check=True)
                         print(f"[*] fixed dependency in {dylib}: {dep[:fni]}{bn}.framework/{bn} -> @rpath/{bn}.framework/{bn}")
 
-    # fixing cydiasubstrate
-    for dylib in dylibs:
         run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)
         run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)  # some dylibs have this
     copytree(f"{USER_DIR}/CydiaSubstrate.framework", f"{APP_PATH}/Frameworks/CydiaSubstrate.framework")
