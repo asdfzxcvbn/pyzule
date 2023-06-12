@@ -1,5 +1,5 @@
 import sys
-from os import system, path, chdir, remove
+from os import system, path, chdir, remove, makedirs
 from requests import get
 from shutil import rmtree
 from platform import system as osname
@@ -9,6 +9,9 @@ SUBSTRATE = path.join(USER_DIR, "CydiaSubstrate.framework")
 if osname() == "Windows":
     print("windows is not supported.")
     sys.exit(1)
+
+if not path.exists(USER_DIR):
+    os.makedirs(USER_DIR)
 
 if path.exists(SUBSTRATE):
     rmtree(SUBSTRATE)
