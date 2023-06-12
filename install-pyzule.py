@@ -1,7 +1,6 @@
 import sys
 from os import system, path, chdir, remove, makedirs
 from requests import get
-from shutil import rmtree
 from platform import system as osname
 USER_DIR = path.expanduser("~/.zxcvbn")
 SUBSTRATE = path.join(USER_DIR, "CydiaSubstrate.framework")
