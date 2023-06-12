@@ -25,6 +25,10 @@ parser.add_argument("-i", metavar="ipa", type=str, required=True,
                     help="the ipa to patch")
 parser.add_argument("-o", metavar="output", type=str, required=True,
                     help="the name of the patched ipa that will be created")
+parser.add_argument("-c", metavar="level", type=int, default=3,
+                    help="the compression level of the output ipa (default is 3)",
+                    action="store", choices=range(1, 10),
+                    nargs="?", const=1)
 parser.add_argument("-f", metavar="files", nargs="+", type=str,
                     help="tweak files to inject into the ipa")
 parser.add_argument("-u", action="store_true",
@@ -127,14 +131,15 @@ if args.f:
 
         deps = [dep.split()[0] for dep in deps_temp if dep.startswith("\t/Library/") or dep.startswith("\t/usr/lib")]
 
+        if any("substrate" in dep.lower() for dep in deps_temp):
+            run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)
+            run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)  # some dylibs have this
+            if not substrate_injected:
+                copytree(f"{USER_DIR}/CydiaSubstrate.framework", f"{APP_PATH}/Frameworks/CydiaSubstrate.framework")
+                print("[*] injected CydiaSubstrate.framework and fixed dependencies")
+                substrate_injected = 1
+
         for dep in deps:
-            if "substrate" in dep.lower():
-                run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)
-                run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)  # some dylibs have this
-                if not substrate_injected:
-                    copytree(f"{USER_DIR}/CydiaSubstrate.framework", f"{APP_PATH}/Frameworks/CydiaSubstrate.framework")
-                    print("[*] injected CydiaSubstrate.framework and fixed dependencies")
-                    substrate_injected = 1
             for known in id:
                 if known in dep:
                     bn = os.path.basename(dep)
@@ -204,8 +209,8 @@ if not changed:
 
 # zipping everything back into an ipa
 os.chdir(EXTRACT_DIR)
-print("[*] generating ipa..")
-run(["zip", "-3", "-r", os.path.basename(args.o), "Payload"], stdout=DEVNULL, check=True)
+print(f"[*] generating ipa using compression level {args.c}..")
+run(["zip", f"-{args.c}", "-r", os.path.basename(args.o), "Payload"], stdout=DEVNULL, check=True)
 
 # cleanup when everything is done
 os.chdir(WORKING_DIR)
