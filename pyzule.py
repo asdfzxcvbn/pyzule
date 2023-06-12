@@ -135,7 +135,8 @@ if args.f:
             run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)
             run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)  # some dylibs have this
             if not substrate_injected:
-                copytree(f"{USER_DIR}/CydiaSubstrate.framework", f"{APP_PATH}/Frameworks/CydiaSubstrate.framework")
+                if not os.path.exists(f"{APP_PATH}/Frameworks/CydiaSubstrate.framework"):
+                    copytree(f"{USER_DIR}/CydiaSubstrate.framework", f"{APP_PATH}/Frameworks/CydiaSubstrate.framework")
                 print("[*] injected CydiaSubstrate.framework and fixed dependencies")
                 substrate_injected = 1
 
@@ -166,7 +167,7 @@ if args.f:
         elif tweak.endswith(".appex"):
             copytree(tweak, f"{APP_PATH}/PlugIns/{bn}")
             print(f"[*] successfully copied {bn} to PlugIns")
-        elif tweak not in dylibs:
+        elif tweak not in dylibs and not tweak.endswith(".deb"):
             if os.path.isdir(tweak):
                 copytree(tweak, f"{APP_PATH}/{bn}")
             else:
@@ -222,4 +223,5 @@ if "/" in args.o:
     os.makedirs(o2, exist_ok=True)
 move(f"{EXTRACT_DIR}/{os.path.basename(args.o)}", args.o)
 print(f"[*] generated ipa at {args.o}")
+print("[*] deleting temporary directory..")
 cleanup(EXTRACT_DIR, True)
