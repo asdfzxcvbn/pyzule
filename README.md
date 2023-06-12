@@ -36,7 +36,9 @@ you need `git`, `gcc`, `zip`, and `tar`. you also need `ar` if you're on linux.
 #### insert_dylib
 you have to build this yourself.
 
-`git clone https://github.com/tyilo/insert_dylib.git && cd insert_dylib/insert_dylib && gcc main.c && chmod +x a.out && sudo mv a.out /usr/local/bin/insert_dylib && cd ../.. && sudo rm -r insert_dylib`
+on macos, run `git clone https://github.com/tyilo/insert_dylib.git && cd insert_dylib/insert_dylib && gcc main.c && chmod +x a.out && sudo mv a.out /usr/local/bin/insert_dylib && cd ../.. && sudo rm -r insert_dylib`
+
+on linux, run `git clone https://github.com/LeanVel/insert_dylib.git && cd insert_dylib && sudo ./Install.sh && cd ../ && sudo rm -rf insert_dylib`
 
 if you're on macos, that should be everything you need to install. skip to the installation script.
 
@@ -83,3 +85,4 @@ qr code:
 
 - [Al4ise](https://github.com/Al4ise) for [Azule](https://github.com/Al4ise/Azule)
 - [tyilo](https://github.com/tyilo) for [insert_dylib](https://github.com/tyilo/insert_dylib)
+- [LeanVel](https://github.com/LeanVel) for [insert_dylib](https://github.com/LeanVel/insert_dylib) for linux
