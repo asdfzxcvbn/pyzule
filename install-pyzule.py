@@ -29,7 +29,7 @@ print("[*] downloaded pyzule!")
 with open("pyzule.py", "r") as o1:
     data = o1.readlines()
 
-data[0] = f"#!{os.executable}\n"
+data[0] = f"#!{sys.executable}\n"
 print("[*] fixed interpreter path!")
 
 with open("pyzule.py", "w") as o2:

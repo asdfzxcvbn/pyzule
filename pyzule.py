@@ -13,7 +13,7 @@ WORKING_DIR = os.getcwd()
 USER_DIR = os.path.expanduser("~/.zxcvbn")
 changed = 0
 
-# check os compatibility and set 
+# check os compatibility
 system = system()
 if system == "Windows":
     print("windows is not currently supported.")
@@ -88,11 +88,11 @@ if args.f:
         os.makedirs(output)
         os.makedirs(f"{output}/e")
         if system == "Linux":
-            run(["ar", "-x", deb, f"--output={output}"])
+            run(["ar", "-x", deb, f"--output={output}"], check=True)
         else:
-            run(["tar", "-xf", deb, "-C", output])
+            run(["tar", "-xf", deb, "-C", output], check=True)
         data_tar = glob(f"{output}/data.*")[0]
-        run(["tar", "-xf", data_tar, "-C", f"{output}/e"])
+        run(["tar", "-xf", data_tar, "-C", f"{output}/e"], check=True)
         for dirpath, dirnames, filenames in os.walk(f"{output}/e"):
             for filename in filenames:
                 if filename.endswith(".dylib"):
@@ -116,11 +116,11 @@ if args.f:
 
     # removing codesign from all dylibs
     for dylib in dylibs:
-        run(["ldid", "-S", dylib], stdout=DEVNULL)
+        run(["ldid", "-S", dylib], stdout=DEVNULL, check=True)
 
     # fix all dependencies (except substrate lol)
     for dylib in dylibs:
-        deps_temp = run(["otool", "-L", dylib], capture_output=True, text=True).stdout.strip().split("\n")[2:]
+        deps_temp = run(["otool", "-L", dylib], capture_output=True, text=True, check=True).stdout.strip().split("\n")[2:]
         for ind, dep in enumerate(deps_temp):
             if "(architecture arm64" in dep:
                 deps_temp = deps_temp[:ind]
@@ -134,22 +134,22 @@ if args.f:
                     bn = os.path.basename(dep)
                     if dep.endswith(".dylib"):
                         fni = dep.find(bn)
-                        run(["install_name_tool", "-change", f"{dep[:fni]}{bn}", f"@rpath/{bn}", dylib])
+                        run(["install_name_tool", "-change", f"{dep[:fni]}{bn}", f"@rpath/{bn}", dylib], check=True)
                         print(f"[*] fixed dependency in {dylib}: {dep[:fni]}{bn} -> @rpath/{bn}")
                     elif ".framework" in dep:
                         fni = dep.find(f"{bn}.framework/{bn}")
-                        run(["install_name_tool", "-change", f"{dep[:fni]}{bn}.framework/{bn}", f"@rpath/{bn}.framework/{bn}", dylib])
+                        run(["install_name_tool", "-change", f"{dep[:fni]}{bn}.framework/{bn}", f"@rpath/{bn}.framework/{bn}", dylib], check=True)
                         print(f"[*] fixed dependency in {dylib}: {dep[:fni]}{bn}.framework/{bn} -> @rpath/{bn}.framework/{bn}")
 
     # fixing cydiasubstrate
     for dylib in dylibs:
-        run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib])
-        run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib])  # some dylibs have this
+        run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)
+        run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)  # some dylibs have this
     copytree(f"{USER_DIR}/CydiaSubstrate.framework", f"{APP_PATH}/Frameworks/CydiaSubstrate.framework")
 
     print("[*] injecting..")
     for d in dylibs:
-        run(["insert_dylib", "--inplace", "--no-strip-codesig", f"@rpath/{d}", f"{APP_PATH}/{BINARY}"], stdout=DEVNULL)
+        run(["insert_dylib", "--inplace", "--no-strip-codesig", f"@rpath/{d}", f"{APP_PATH}/{BINARY}"], stdout=DEVNULL, check=True)
         copyfile(d, f"{APP_PATH}/Frameworks/{d}")
         print(f"[*] successfully injected {d}")
     for tweak in args.f:
@@ -203,7 +203,7 @@ if not changed:
 # zipping everything back into an ipa
 os.chdir(EXTRACT_DIR)
 print("[*] generating ipa..")
-run(["zip", "-3", "-r", f"{WORKING_DIR}/{args.o}", "Payload"], stdout=DEVNULL)
+run(["zip", "-3", "-r", f"{WORKING_DIR}/{args.o}", "Payload"], stdout=DEVNULL, check=True)
 
 # cleanup when everything is done
 os.chdir(WORKING_DIR)
