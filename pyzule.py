@@ -83,7 +83,8 @@ if args.f:
     for deb in args.f:
         if not deb.endswith(".deb"):
             continue
-        print(f"[*] extracting {deb}..")
+        bn = os.path.basename(deb)
+        print(f"[*] extracting {bn}..")
         output = f"{EXTRACT_DIR}/{deb_counter}"
         os.makedirs(output)
         os.makedirs(f"{output}/e")
@@ -111,7 +112,7 @@ if args.f:
                     if ".framework" in dirname:
                         id.append(dirname)
                     remove.append(dirname)
-        print(f"[*] extracted {deb} successfully")
+        print(f"[*] extracted {bn} successfully")
         deb_counter += 1
 
     # remove codesign + fix all dependencies
