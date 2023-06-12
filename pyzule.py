@@ -125,9 +125,9 @@ if args.f:
             if "(architecture arm64" in dep:
                 deps_temp = deps_temp[:ind]
                 break
-            
+
         deps = [dep.split()[0] for dep in deps_temp if dep.startswith("\t/Library/")] + [dep.split()[0] for dep in deps_temp if dep.startswith("\t/usr/lib/")]
-        
+
         for dep in deps:
             for known in id:
                 if known in dep:
@@ -175,7 +175,7 @@ if args.u:
     print("[*] removing UISupportedDevices..")
     with open(PLIST_PATH, "rb") as p:
         plist = load(p)
-    
+
     if "UISupportedDevices" in plist:
         del plist["UISupportedDevices"]
         print("[*] removed UISupportedDevices")

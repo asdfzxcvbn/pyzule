@@ -1,5 +1,5 @@
+import sys
 from os import system, path, chdir, remove
-from sys import executable
 from requests import get
 from shutil import rmtree
 from platform import system as osname
@@ -8,7 +8,7 @@ SUBSTRATE = path.join(USER_DIR, "CydiaSubstrate.framework")
 
 if osname() == "Windows":
     print("windows is not supported.")
-    exit(1)
+    sys.exit(1)
 
 if path.exists(SUBSTRATE):
     rmtree(SUBSTRATE)
@@ -29,7 +29,7 @@ print("[*] downloaded pyzule!")
 with open("pyzule.py", "r") as o1:
     data = o1.readlines()
 
-data[0] = f"#!{executable}\n"
+data[0] = f"#!{os.executable}\n"
 print("[*] fixed interpreter path!")
 
 with open("pyzule.py", "w") as o2:
