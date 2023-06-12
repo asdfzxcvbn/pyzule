@@ -127,14 +127,15 @@ if args.f:
 
         deps = [dep.split()[0] for dep in deps_temp if dep.startswith("\t/Library/") or dep.startswith("\t/usr/lib")]
 
+        if any("substrate" in dep.lower() for dep in deps_temp):
+            run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)
+            run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)  # some dylibs have this
+            if not substrate_injected:
+                copytree(f"{USER_DIR}/CydiaSubstrate.framework", f"{APP_PATH}/Frameworks/CydiaSubstrate.framework")
+                print("[*] injected CydiaSubstrate.framework and fixed dependencies")
+                substrate_injected = 1
+
         for dep in deps:
-            if "substrate" in dep.lower():
-                run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)
-                run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)  # some dylibs have this
-                if not substrate_injected:
-                    copytree(f"{USER_DIR}/CydiaSubstrate.framework", f"{APP_PATH}/Frameworks/CydiaSubstrate.framework")
-                    print("[*] injected CydiaSubstrate.framework and fixed dependencies")
-                    substrate_injected = 1
             for known in id:
                 if known in dep:
                     bn = os.path.basename(dep)
