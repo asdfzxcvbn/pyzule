@@ -1,5 +1,5 @@
 # pyzule
-an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. windows is not currently supported, but it should *(hopefully)* work in wsl.
+an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. windows is not currently supported, but it should *(hopefully)* work in wsl. officially supports linux and macos. tested on arch linux and macos mojave w/ intel cpu.
 
 ## features
 not many right now, but will probably add some in the future if i need them.
@@ -13,7 +13,7 @@ you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i ipa -o output [-f files [files ...]] [-u] [-w]
+usage: pyzule [-h] -i ipa -o output [-c [level]] [-f files [files ...]] [-u] [-w]
 
 an azule "clone" written in python3.
 
@@ -21,6 +21,7 @@ options:
   -h, --help            show this help message and exit
   -i ipa                the ipa to patch
   -o output             the name of the patched ipa that will be created
+  -c [level]            the compression level of the output ipa (default is 3)
   -f files [files ...]  tweak files to inject into the ipa
   -u                    remove UISupportedDevices
   -w                    remove watch app

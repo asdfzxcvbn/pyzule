@@ -12,17 +12,15 @@ if osname() == "Windows":
 
 if not path.exists(USER_DIR):
     makedirs(USER_DIR)
-
-if path.exists(SUBSTRATE):
-    rmtree(SUBSTRATE)
-
-print("[*] downloading CydiaSubstrate..")
 chdir(USER_DIR)
-with open("CydiaSubstrate.framework.zip", "wb") as ss:
-    ss.write(get("https://cdn.discordapp.com/attachments/1099871910155796495/1117506544091799623/CydiaSubstrate.framework.zip").content)
-system("unzip CydiaSubstrate.framework.zip")
-remove("CydiaSubstrate.framework.zip")
-print("[*] downloaded CydiaSubstrate")
+
+if not path.exists(SUBSTRATE):
+    print("[*] downloading CydiaSubstrate..")
+    with open("CydiaSubstrate.framework.zip", "wb") as ss:
+        ss.write(get("https://cdn.discordapp.com/attachments/1099871910155796495/1117506544091799623/CydiaSubstrate.framework.zip").content)
+    system("unzip CydiaSubstrate.framework.zip")
+    remove("CydiaSubstrate.framework.zip")
+    print("[*] downloaded CydiaSubstrate")
 
 print("[*] downloading pyzule..")
 with open("pyzule.py", "wb") as p:
