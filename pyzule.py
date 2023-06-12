@@ -163,12 +163,15 @@ if args.f:
         if tweak.endswith(".framework"):
             copytree(tweak, f"{APP_PATH}/Frameworks/{bn}")
             print(f"[*] successfully injected {bn}")
-        elif tweak.endswith(".bundle"):
-            copytree(tweak, f"{APP_PATH}/{bn}")
-            print(f"[*] successfully copied {bn} to app root")
         elif tweak.endswith(".appex"):
             copytree(tweak, f"{APP_PATH}/PlugIns/{bn}")
             print(f"[*] successfully copied {bn} to PlugIns")
+        else:
+            if os.path.isdir(tweak):
+                copytree(tweak, f"{APP_PATH}/{bn}")
+            else:
+                copyfile(tweak, f"{APP_PATH}/{bn}")
+            print(f"[*] successfully copied {bn} to app root")
     changed = 1
 
     for r in remove:
