@@ -166,7 +166,7 @@ if args.f:
         elif tweak.endswith(".appex"):
             copytree(tweak, f"{APP_PATH}/PlugIns/{bn}")
             print(f"[*] successfully copied {bn} to PlugIns")
-        else:
+        elif tweak not in dylibs:
             if os.path.isdir(tweak):
                 copytree(tweak, f"{APP_PATH}/{bn}")
             else:
