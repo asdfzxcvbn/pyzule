@@ -1,4 +1,4 @@
-#!/Library/Frameworks/Python.framework/Versions/3.10/bin/python3
+#!/usr/bin/python3
 import argparse
 import sys
 import os
@@ -204,6 +204,9 @@ run(["zip", "-3", "-r", os.path.basename(args.o), "Payload"], stdout=DEVNULL, ch
 
 # cleanup when everything is done
 os.chdir(WORKING_DIR)
+if "/" in args.o:
+    o2 = args.o.replace(os.path.basename(args.o), "")
+    os.makedirs(o2, exist_ok=True)
 move(f"{EXTRACT_DIR}/{os.path.basename(args.o)}", args.o)
 print(f"[*] generated ipa at {args.o}")
 cleanup(EXTRACT_DIR, True)
