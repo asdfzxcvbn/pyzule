@@ -5,6 +5,7 @@ an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. windows 
 not many right now, but will probably add some in the future if i need them.
 
 - inject deb, dylib, framework, bundle, and appex files and automatically fix dependencies when possible
+- copy any unknown file/folder types to app root
 - remove UISupportedDevices
 - remove watch app
 
