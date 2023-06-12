@@ -24,7 +24,6 @@ options:
   -f files [files ...]  tweak files to inject into the ipa
   -u                    remove UISupportedDevices
   -w                    remove watch app
-
 ```
 
 ## installation
