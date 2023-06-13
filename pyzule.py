@@ -97,7 +97,7 @@ if args.f:
         os.makedirs(f"{APP_PATH}/Frameworks", exist_ok=True)
         deb_counter = 0
     dylibs = [d for d in args.f if d.endswith(".dylib")]
-    id = dylibs + [f for f in args.f if ".framework" in f]
+    id = dylibs + [f for f in args.f if ".framework" in f and "CydiaSubstrate.framework" not in f]
     remove = []
     substrate_injected = 0
 
@@ -162,13 +162,11 @@ if args.f:
                 if os.path.basename(known) in dep:
                     bn = os.path.basename(dep)
                     if dep.endswith(".dylib"):
-                        fni = dep.find(bn)
-                        run(["install_name_tool", "-change", f"{dep[:fni]}{bn}", f"@rpath/{bn}", dylib], check=True)
-                        print(f"[*] fixed dependency in {dylib}: {dep[:fni]}{bn} -> @rpath/{bn}")
+                        run(["install_name_tool", "-change", dep, f"@rpath/{bn}", dylib], check=True)
+                        print(f"[*] fixed dependency in {dylib}: {dep} -> @rpath/{bn}")
                     elif ".framework" in dep:
-                        fni = dep.find(f"{bn}.framework/{bn}")
-                        run(["install_name_tool", "-change", f"{dep[:fni]}{bn}.framework/{bn}", f"@rpath/{bn}.framework/{bn}", dylib], check=True)
-                        print(f"[*] fixed dependency in {dylib}: {dep[:fni]}{bn}.framework/{bn} -> @rpath/{bn}.framework/{bn}")
+                        run(["install_name_tool", "-change", dep, f"@rpath/{bn}.framework/{bn}", dylib], check=True)
+                        print(f"[*] fixed dependency in {dylib}: {dep} -> @rpath/{bn}.framework/{bn}")
 
     print("[*] injecting..")
     for d in dylibs:
@@ -178,13 +176,13 @@ if args.f:
         print(f"[*] successfully injected {bn}")
     for tweak in args.f:
         bn = os.path.basename(tweak)
-        if tweak.endswith(".framework"):
+        if tweak.endswith(".framework") and not "CydiaSubstrate" in tweak:
             copytree(tweak, f"{APP_PATH}/Frameworks/{bn}")
             print(f"[*] successfully injected {bn}")
         elif tweak.endswith(".appex"):
             copytree(tweak, f"{APP_PATH}/PlugIns/{bn}")
             print(f"[*] successfully copied {bn} to PlugIns")
-        elif tweak not in dylibs and not tweak.endswith(".deb"):
+        elif tweak not in dylibs and not tweak.endswith(".deb") and not "CydiaSubstrate" in tweak:
             if os.path.isdir(tweak):
                 copytree(tweak, f"{APP_PATH}/{bn}")
             else:
