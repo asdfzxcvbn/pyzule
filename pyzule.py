@@ -25,6 +25,12 @@ parser.add_argument("-i", metavar="ipa", type=str, required=True,
                     help="the ipa to patch")
 parser.add_argument("-o", metavar="output", type=str, required=True,
                     help="the name of the patched ipa that will be created")
+parser.add_argument("-n", metavar="name", type=str, required=False,
+                    help="modify the app's name")
+parser.add_argument("-v", metavar="version", type=str, required=False,
+                    help="modify the app's version")
+parser.add_argument("-b", metavar="bundle id", type=str, required=False,
+                    help="modify the app's bundle id")
 parser.add_argument("-c", metavar="level", type=int, default=3,
                     help="the compression level of the output ipa (default is 3)",
                     action="store", choices=range(1, 10),
@@ -46,7 +52,7 @@ if not args.i.endswith(".ipa") or not args.o.endswith(".ipa"):
     parser.error("the input and output file must be an ipa")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
-elif not (args.f or args.u or args.w or args.m or args.d):
+elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b)):
     parser.error("at least one option to modify the ipa must be present")
 
 
@@ -185,24 +191,20 @@ if args.f:
         else:
             rmtree(r)
 
+with open(PLIST_PATH, "rb") as p:
+    plist = load(p)
+
 # removing UISupportedDevices (if specified)
 if args.u:
-    print("[*] removing UISupportedDevices..")
-    with open(PLIST_PATH, "rb") as p:
-        plist = load(p)
-
     if "UISupportedDevices" in plist:
         del plist["UISupportedDevices"]
         print("[*] removed UISupportedDevices")
         changed = 1
-        with open(PLIST_PATH, "wb") as p:
-            dump(plist, p)
     else:
         print("[?] UISupportedDevices not present")
 
 # removing watch app (if specified)
 if args.w:
-    print("[*] removing watch app..")
     try:
         rmtree(f"{APP_PATH}/Watch")
         print("[*] removed watch app")
@@ -212,27 +214,37 @@ if args.w:
 
 # set minimum os version (if specified)
 if args.m:
-    print("[*] setting MinimumOSVersion..")
-    with open(PLIST_PATH, "rb") as p:
-        plist = load(p)
     plist["MinimumOSVersion"] = "10.0"
     print("[*] set MinimumOSVersion to iOS 10.0")
     changed = 1
 
-    with open(PLIST_PATH, "wb") as p:
-        dump(plist, p)
-
+# enable documents support
 if args.d:
-    print("[*] enabling documents support..")
-    with open(PLIST_PATH, "rb") as p:
-        plist = load(p)
-
     plist["UISupportsDocumentBrowser"] = True
     print("[*] enabled documents support")
     changed = 1
 
-    with open(PLIST_PATH, "wb") as p:
-        dump(plist, p)
+# change app name
+if args.n:
+    plist["CFBundleDisplayName"] = args.n
+    print(f"[*] changed app name to {args.n}")
+    changed = 1
+
+# change app version
+if args.v:
+    plist["CFBundleShortVersionString"] = args.v
+    plist["CFBundleVersion"] = args.v
+    print(f"[*] changed app version to {args.v}")
+    changed = 1
+
+# change app bundle id
+if args.b:
+    plist["CFBundleIdentifier"] = args.b
+    print(f"[*] changed bundle id to {args.b}")
+    changed = 1
+    
+with open(PLIST_PATH, "wb") as p:
+    dump(plist, p)
 
 # checking if anything was actually changed
 if not changed:
