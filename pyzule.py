@@ -162,13 +162,11 @@ if args.f:
                 if os.path.basename(known) in dep:
                     bn = os.path.basename(dep)
                     if dep.endswith(".dylib"):
-                        fni = dep.find(bn)
-                        run(["install_name_tool", "-change", f"{dep[:fni]}{bn}", f"@rpath/{bn}", dylib], check=True)
-                        print(f"[*] fixed dependency in {dylib}: {dep[:fni]}{bn} -> @rpath/{bn}")
+                        run(["install_name_tool", "-change", dep, f"@rpath/{bn}", dylib], check=True)
+                        print(f"[*] fixed dependency in {dylib}: {dep} -> @rpath/{bn}")
                     elif ".framework" in dep:
-                        fni = dep.find(f"{bn}.framework/{bn}")
-                        run(["install_name_tool", "-change", f"{dep[:fni]}{bn}.framework/{bn}", f"@rpath/{bn}.framework/{bn}", dylib], check=True)
-                        print(f"[*] fixed dependency in {dylib}: {dep[:fni]}{bn}.framework/{bn} -> @rpath/{bn}.framework/{bn}")
+                        run(["install_name_tool", "-change", dep, f"@rpath/{bn}.framework/{bn}", dylib], check=True)
+                        print(f"[*] fixed dependency in {dylib}: {dep} -> @rpath/{bn}.framework/{bn}")
 
     print("[*] injecting..")
     for d in dylibs:
