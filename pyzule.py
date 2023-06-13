@@ -242,7 +242,7 @@ if args.b:
     plist["CFBundleIdentifier"] = args.b
     print(f"[*] changed bundle id to {args.b}")
     changed = 1
-    
+
 with open(PLIST_PATH, "wb") as p:
     dump(plist, p)
 
