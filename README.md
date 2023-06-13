@@ -14,7 +14,7 @@ you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i ipa -o output [-c [level]] [-f files [files ...]] [-u] [-w]
+usage: pyzule [-h] -i ipa -o output [-c [level]] [-f files [files ...]] [-u] [-w] [-m] [-d]
 
 an azule "clone" written in python3.
 
@@ -26,6 +26,8 @@ options:
   -f files [files ...]  tweak files to inject into the ipa
   -u                    remove UISupportedDevices
   -w                    remove watch app
+  -m                    set MinimumOSVersion to iOS 10.0
+  -d                    enable files access
 ```
 
 ## installation

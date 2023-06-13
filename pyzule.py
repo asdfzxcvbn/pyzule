@@ -35,6 +35,10 @@ parser.add_argument("-u", action="store_true",
                     help="remove UISupportedDevices")
 parser.add_argument("-w", action="store_true",
                     help="remove watch app")
+parser.add_argument("-m", action="store_true",
+                    help="set MinimumOSVersion to iOS 10.0")
+parser.add_argument("-d", action="store_true",
+                    help="enable files access")
 args = parser.parse_args()
 
 # checking received args
@@ -42,7 +46,7 @@ if not args.i.endswith(".ipa") or not args.o.endswith(".ipa"):
     parser.error("the input and output file must be an ipa")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
-elif not (args.f or args.u or args.w):
+elif not (args.f or args.u or args.w or args.m or args.d):
     parser.error("at least one option to modify the ipa must be present")
 
 
@@ -205,6 +209,30 @@ if args.w:
         changed = 1
     except FileNotFoundError:
         print("[?] watch app not present")
+
+# set minimum os version (if specified)
+if args.m:
+    print("[*] setting MinimumOSVersion..")
+    with open(PLIST_PATH, "rb") as p:
+        plist = load(p)
+    plist["MinimumOSVersion"] = "10.0"
+    print("[*] set MinimumOSVersion to iOS 10.0")
+    changed = 1
+
+    with open(PLIST_PATH, "wb") as p:
+        dump(plist, p)
+
+if args.d:
+    print("[*] enabling documents support..")
+    with open(PLIST_PATH, "rb") as p:
+        plist = load(p)
+
+    plist["UISupportsDocumentBrowser"] = True
+    print("[*] enabled documents support")
+    changed = 1
+
+    with open(PLIST_PATH, "wb") as p:
+        dump(plist, p)
 
 # checking if anything was actually changed
 if not changed:
