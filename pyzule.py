@@ -99,7 +99,6 @@ if args.f:
         if not deb.endswith(".deb"):
             continue
         bn = os.path.basename(deb)
-        rnc = 0
         print(f"[*] extracting {bn}..")
         output = f"{EXTRACT_DIR}/{deb_counter}"
         os.makedirs(output)
@@ -115,33 +114,19 @@ if args.f:
                 if filename.endswith(".dylib"):
                     src_path = os.path.join(dirpath, filename)
                     dest_path = os.path.join(WORKING_DIR, filename)
-                    if os.path.exists(dest_path):
-                        name, ext = os.path.splitext(dirname)
-                        name += str(rnc)
-                        os.rename(dirname, name + ext)
-                        src_path = os.path.join(dirpath, filename)
-                        dest_path = os.path.join(WORKING_DIR, filename)
                     move(src_path, dest_path)
                     dylibs.append(filename)
                     id.append(filename)
                     remove.append(filename)
-                    rnc += 1
             for dirname in dirnames:
                 if dirname.endswith(".bundle") or dirname.endswith(".framework"):
                     src_path = os.path.join(dirpath, dirname)
                     dest_path = os.path.join(WORKING_DIR, dirname)
-                    if os.path.exists(dest_path):
-                        name, ext = os.path.splitext(dirname)
-                        name += str(rnc)
-                        os.rename(dirname, name + ext)
-                        src_path = os.path.join(dirpath, dirname)
-                        dest_path = os.path.join(WORKING_DIR, dirname)
                     move(src_path, dest_path)
                     args.f.append(dirname)
                     if ".framework" in dirname:
                         id.append(dirname)
                     remove.append(dirname)
-                    rnc += 1
         print(f"[*] extracted {bn} successfully")
         deb_counter += 1
 
@@ -186,28 +171,18 @@ if args.f:
         print(f"[*] successfully injected {bn}")
     for tweak in args.f:
         bn = os.path.basename(tweak)
-        while 1:
-            try:
-                if tweak.endswith(".framework"):
-                    copytree(tweak, f"{APP_PATH}/Frameworks/{bn}")
-                    print(f"[*] successfully injected {bn}")
-                elif tweak.endswith(".appex"):
-                    copytree(tweak, f"{APP_PATH}/PlugIns/{bn}")
-                    print(f"[*] successfully copied {bn} to PlugIns")
-                elif tweak not in dylibs and not tweak.endswith(".deb"):
-                    if os.path.isdir(tweak):
-                        copytree(tweak, f"{APP_PATH}/{bn}")
-                    else:
-                        copyfile(tweak, f"{APP_PATH}/{bn}")
-                    print(f"[*] successfully copied {bn} to app root")
-                break
-            except FileExistsError:
-                base, ext = os.path.splitext(bn)
-                base += str(deb_counter)
-                deb_counter += 1
-                remove[remove.index(bn)] = base + ext
-                bn = base + ext
-
+        if tweak.endswith(".framework"):
+            copytree(tweak, f"{APP_PATH}/Frameworks/{bn}")
+            print(f"[*] successfully injected {bn}")
+        elif tweak.endswith(".appex"):
+            copytree(tweak, f"{APP_PATH}/PlugIns/{bn}")
+            print(f"[*] successfully copied {bn} to PlugIns")
+        elif tweak not in dylibs and not tweak.endswith(".deb"):
+            if os.path.isdir(tweak):
+                copytree(tweak, f"{APP_PATH}/{bn}")
+            else:
+                copyfile(tweak, f"{APP_PATH}/{bn}")
+            print(f"[*] successfully copied {bn} to app root")
     changed = 1
 
     for r in remove:
