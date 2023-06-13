@@ -91,7 +91,6 @@ if args.f:
         deb_counter = 0
     dylibs = [d for d in args.f if d.endswith(".dylib")]
     id = dylibs + [f for f in args.f if ".framework" in f]
-    print(id)
     remove = []
     substrate_injected = 0
 
