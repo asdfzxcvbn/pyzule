@@ -91,6 +91,7 @@ if args.f:
         deb_counter = 0
     dylibs = [d for d in args.f if d.endswith(".dylib")]
     id = dylibs + [f for f in args.f if ".framework" in f]
+    print(id)
     remove = []
     substrate_injected = 0
 
@@ -152,7 +153,7 @@ if args.f:
 
         for dep in deps:
             for known in id:
-                if known in dep:
+                if os.path.basename(known) in dep:
                     bn = os.path.basename(dep)
                     if dep.endswith(".dylib"):
                         fni = dep.find(bn)
