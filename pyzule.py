@@ -152,7 +152,7 @@ if args.f:
 
         for dep in deps:
             for known in id:
-                if known in dep:
+                if os.path.basename(known) in dep:
                     bn = os.path.basename(dep)
                     if dep.endswith(".dylib"):
                         fni = dep.find(bn)
