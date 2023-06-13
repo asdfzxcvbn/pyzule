@@ -1,4 +1,7 @@
 # pyzule
+
+**note: it is currently not recommended to use pyzule due to compatibility problems. i'll remove this if i figure something out.**
+
 an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. windows is not currently supported, but it should *(hopefully)* work in wsl. officially supports linux and macos. tested on arch linux and macos mojave w/ intel cpu.
 
 ## features
