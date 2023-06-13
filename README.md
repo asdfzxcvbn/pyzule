@@ -6,6 +6,10 @@ not many right now, but will probably add some in the future if i need them.
 
 - inject deb, dylib, framework, bundle, and appex files and automatically fix dependencies when possible
 - copy any unknown file/folder types to app root
+- use a custom compression level
+- change app name, version, and bundle id
+- enable documents support
+- set minimum iOS version to 10.0
 - remove UISupportedDevices
 - remove watch app
 
@@ -14,7 +18,7 @@ you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i ipa -o output [-c [level]] [-f files [files ...]] [-u] [-w] [-m] [-d]
+usage: pyzule [-h] -i ipa -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-f files [files ...]] [-u] [-w] [-m] [-d]
 
 an azule "clone" written in python3.
 
@@ -22,6 +26,9 @@ options:
   -h, --help            show this help message and exit
   -i ipa                the ipa to patch
   -o output             the name of the patched ipa that will be created
+  -n name               modify the app's name
+  -v version            modify the app's version
+  -b bundle id          modify the app's bundle id
   -c [level]            the compression level of the output ipa (default is 3)
   -f files [files ...]  tweak files to inject into the ipa
   -u                    remove UISupportedDevices
