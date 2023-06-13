@@ -54,6 +54,13 @@ elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
 elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b)):
     parser.error("at least one option to modify the ipa must be present")
+if os.path.exists(args.o):
+    overwrite = input(f"[<] {args.o} already exists. overwrite? [Y/n] ").lower().strip()
+    if overwrite in ("y", "yes", ""):
+        del overwrite
+    else:
+        print("[>] quitting.")
+        sys.exit()
 
 
 def cleanup(extract_dir, success):
