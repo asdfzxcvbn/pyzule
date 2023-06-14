@@ -18,7 +18,7 @@ you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i ipa -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-f files [files ...]] [-u] [-w] [-m] [-d]
+usage: pyzule [-h] -i ipa -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s]
 
 an azule "clone" written in python3.
 
@@ -35,6 +35,7 @@ options:
   -w                    remove watch app
   -m                    set MinimumOSVersion to iOS 10.0
   -d                    enable files access
+  -s                    fakesigns the ipa (for use with appsync)
 ```
 
 ## installation
