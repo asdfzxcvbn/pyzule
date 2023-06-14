@@ -1,6 +1,10 @@
 # pyzule
 
-**note: it is currently not recommended to use pyzule due to compatibility problems. i'll remove this if i figure something out.**
+~~**note: it is currently not recommended to use pyzule due to compatibility problems. i'll remove this if i figure something out.**~~
+
+**edit:** i was using something from azule to try to fix trollstore compatibility problems. turns out azule's ipa didnt work either. how fun. anyways, this is doing the same thing as azule (pretty much), so it should work wherever azule works.
+
+~
 
 an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. windows is not currently supported, but it should *(hopefully)* work in wsl. officially supports linux and macos. tested on arch linux and macos mojave w/ intel cpu.
 
