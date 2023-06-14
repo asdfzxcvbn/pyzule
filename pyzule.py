@@ -45,6 +45,8 @@ parser.add_argument("-m", action="store_true",
                     help="set MinimumOSVersion to iOS 10.0")
 parser.add_argument("-d", action="store_true",
                     help="enable files access")
+parser.add_argument("-s", action="store_true",
+                    help="fakesigns the ipa (for use with appsync)")
 args = parser.parse_args()
 
 # checking received args
@@ -91,6 +93,9 @@ except IndexError:
 if args.f:
     with open(PLIST_PATH, "rb") as pl:
         BINARY = load(pl)["CFBundleExecutable"]
+    run(f"ldid -e {APP_PATH}/{BINARY} > {APP_PATH}/pyzule_entitlements", shell=True, check=True)
+    run(["ldid", "-r", f"{APP_PATH}/{BINARY}"], check=True)
+    print(f"[*] removed codesignature")
     if any(i.endswith(".appex") for i in args.f):
         os.makedirs(f"{APP_PATH}/PlugIns", exist_ok=True)
     if any(i.endswith(known) for i in args.f for known in (".deb", ".dylib", ".framework")):
@@ -139,7 +144,7 @@ if args.f:
 
     # remove codesign + fix all dependencies
     for dylib in dylibs:
-        run(["ldid", "-S", dylib], stdout=DEVNULL, check=True)
+        run(["ldid", "-r", "-M", dylib], stdout=DEVNULL, check=True)
         deps_temp = run(["otool", "-L", dylib], capture_output=True, text=True, check=True).stdout.strip().split("\n")[2:]
         for ind, dep in enumerate(deps_temp):
             if "(architecture " in dep:
@@ -189,6 +194,9 @@ if args.f:
                 copyfile(tweak, f"{APP_PATH}/{bn}")
             print(f"[*] successfully copied {bn} to app root")
     changed = 1
+
+    run(["ldid", f"-S{APP_PATH}/pyzule_entitlements", f"{APP_PATH}/{BINARY}"], check=True)
+    print(f"[*] restored app entitlements")
 
     for r in remove:
         if os.path.isfile(r):
@@ -250,6 +258,18 @@ if args.b:
 
 with open(PLIST_PATH, "wb") as p:
     dump(plist, p)
+
+if args.s:
+    run(["ldid", "-S", "-M", f"{APP_PATH}/{BINARY}"], check=True)
+    print(f"[*] fakesigned {BINARY}")
+    for fs in id:
+        bn = os.path.basename(fs)
+        if ".framework" in fs:
+            run(["ldid", "-S", "-M", f"{APP_PATH}/Frameworks/{bn}.framework/{bn}"], check=True)
+        else:
+            run(["ldid", "-S", "-M", f"{APP_PATH}/Frameworks/{bn}"], check=True)
+        print(f"[*] fakesigned {fs}")
+    changed = 1
 
 # checking if anything was actually changed
 if not changed:
