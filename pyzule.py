@@ -72,8 +72,6 @@ remove = []
 
 
 def cleanup():
-    global REAL_EXTRACT_DIR
-    global remove
     print("[*] deleting temporary directory..")
     rmtree(REAL_EXTRACT_DIR)
     for r in remove:
@@ -210,12 +208,6 @@ if args.f:
     run(["ldid", f"-S{APP_PATH}/pyzule_entitlements", f"{APP_PATH}/{BINARY}"], check=True)
     print(f"[*] restored app entitlements")
 
-    for r in remove:
-        if os.path.isfile(r):
-            os.remove(r)
-        else:
-            rmtree(r)
-
 with open(PLIST_PATH, "rb") as p:
     plist = load(p)
 
@@ -279,10 +271,10 @@ if args.s:
     for fs in glob(f"{APP_PATH}/Frameworks/*.dylib") + glob(f"{APP_PATH}/Frameworks/*.framework"):
         bn = os.path.basename(fs)
         if ".framework" in fs:
-            run(["ldid", "-S", "-M", f"{fs}/{bn}"], check=True)
+            run(["ldid", "-S", "-M", f"{fs}/{bn[:-10]}"], check=True)
         else:
             run(["ldid", "-S", "-M", fs], check=True)
-        print(f"[*] fakesigned {fs}")
+        print(f"[*] fakesigned {bn}")
     changed = 1
 
 if args.e:
