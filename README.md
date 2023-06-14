@@ -2,7 +2,7 @@
 
 ~~**note: it is currently not recommended to use pyzule due to compatibility problems. i'll remove this if i figure something out.**~~
 
-**edit:** i was using something from azule to try to fix trollstore compatibility problems. turns out azule's ipa didnt work either. how fun. anyways, this is doing the same thing as azule (pretty much), so it should work wherever azule works.
+**edit:** i was using something from azule to try to fix trollstore compatibility problems. turns out azule's ipa didnt work either. how fun. anyways, this is doing the same thing as azule (pretty much), so it should work wherever azule works. try fakesigning with -s if an ipa doesnt work for you.
 
 ~
 
