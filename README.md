@@ -44,7 +44,7 @@ options:
   -w                    remove watch app
   -m                    set MinimumOSVersion to iOS 10.0
   -d                    enable files access
-  -s                    fakesigns the ipa (for use with appsync)
+  -s                    fakesigns the ipa (for use with appsync/trollstore)
   -e                    remove app extensions
 ```
 
