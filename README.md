@@ -19,13 +19,15 @@ not many right now, but will probably add some in the future if i need them.
 - set minimum iOS version to 10.0
 - remove UISupportedDevices
 - remove watch app
+- remove app extensions
+- fakesign the output ipa
 
 ## usage
 you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i ipa -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s]
+usage: pyzule [-h] -i ipa -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e]
 
 an azule "clone" written in python3.
 
@@ -43,6 +45,7 @@ options:
   -m                    set MinimumOSVersion to iOS 10.0
   -d                    enable files access
   -s                    fakesigns the ipa (for use with appsync)
+  -e                    remove app extensions
 ```
 
 ## installation
