@@ -7,6 +7,7 @@ from subprocess import run, DEVNULL
 from plistlib import load, dump
 from platform import system
 from zipfile import ZipFile
+from atexit import register
 from time import time
 from glob import glob
 WORKING_DIR = os.getcwd()
@@ -47,6 +48,8 @@ parser.add_argument("-d", action="store_true",
                     help="enable files access")
 parser.add_argument("-s", action="store_true",
                     help="fakesigns the ipa (for use with appsync)")
+parser.add_argument("-e", action="store_true",
+                    help="remove app extensions")
 args = parser.parse_args()
 
 # checking received args
@@ -54,7 +57,7 @@ if not args.i.endswith(".ipa") or not args.o.endswith(".ipa"):
     parser.error("the input and output file must be an ipa")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
-elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b)):
+elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e)):
     parser.error("at least one option to modify the ipa must be present")
 if os.path.exists(args.o):
     overwrite = input(f"[<] {args.o} already exists. overwrite? [Y/n] ").lower().strip()
@@ -63,19 +66,28 @@ if os.path.exists(args.o):
     else:
         print("[>] quitting.")
         sys.exit()
+EXTRACT_DIR = f".pyzule-{time()}"
+REAL_EXTRACT_DIR = f"{os.getcwd()}/{EXTRACT_DIR}"
+remove = []
 
 
-def cleanup(extract_dir, success):
-    rmtree(extract_dir)
-    if success:
-        sys.exit(0)
-    else:
-        sys.exit(1)
+def cleanup():
+    global REAL_EXTRACT_DIR
+    global remove
+    print("[*] deleting temporary directory..")
+    rmtree(REAL_EXTRACT_DIR)
+    for r in remove:
+        if os.path.isdir(r):
+            rmtree(r)
+        else:
+            os.remove(r)
+
+
+register(cleanup)
 
 
 # extracting ipa
 print("[*] extracting ipa..")
-EXTRACT_DIR = f".pyzule-{time()}"
 with ZipFile(args.i, "r") as ipa:
     ipa.extractall(path=EXTRACT_DIR)
 print("[*] extracted ipa successfully")
@@ -86,7 +98,7 @@ try:
     PLIST_PATH = glob(f"{APP_PATH}/Info.plist")[0]
 except IndexError:
     print("[!] couldn't find Payload folder and/or Info.plist file, invalid ipa specified")
-    cleanup(EXTRACT_DIR, False)
+    sys.exit(1)
 
 
 # injecting stuff
@@ -102,7 +114,7 @@ if args.f:
         os.makedirs(f"{APP_PATH}/Frameworks", exist_ok=True)
         deb_counter = 0
     dylibs = [d for d in args.f if d.endswith(".dylib")]
-    id = dylibs + [f for f in args.f if ".framework" in f and "CydiaSubstrate.framework" not in f]
+    id_injected = dylibs + [f for f in args.f if ".framework" in f and "CydiaSubstrate.framework" not in f]
     remove = []
     substrate_injected = 0
 
@@ -128,7 +140,7 @@ if args.f:
                     dest_path = os.path.join(WORKING_DIR, filename)
                     move(src_path, dest_path)
                     dylibs.append(filename)
-                    id.append(filename)
+                    id_injected.append(filename)
                     remove.append(filename)
             for dirname in dirnames:
                 if dirname.endswith(".bundle") or dirname.endswith(".framework"):
@@ -137,7 +149,7 @@ if args.f:
                     move(src_path, dest_path)
                     args.f.append(dirname)
                     if ".framework" in dirname:
-                        id.append(dirname)
+                        id_injected.append(dirname)
                     remove.append(dirname)
         print(f"[*] extracted {bn} successfully")
         deb_counter += 1
@@ -163,7 +175,7 @@ if args.f:
                 substrate_injected = 1
 
         for dep in deps:
-            for known in id:
+            for known in id_injected:
                 if os.path.basename(known) in dep:
                     bn = os.path.basename(dep)
                     if dep.endswith(".dylib"):
@@ -260,21 +272,31 @@ with open(PLIST_PATH, "wb") as p:
     dump(plist, p)
 
 if args.s:
+    with open(PLIST_PATH, "rb") as pl:
+        BINARY = load(pl)["CFBundleExecutable"]
     run(["ldid", "-S", "-M", f"{APP_PATH}/{BINARY}"], check=True)
     print(f"[*] fakesigned {BINARY}")
-    for fs in id:
+    for fs in glob(f"{APP_PATH}/Frameworks/*.dylib") + glob(f"{APP_PATH}/Frameworks/*.framework"):
         bn = os.path.basename(fs)
         if ".framework" in fs:
-            run(["ldid", "-S", "-M", f"{APP_PATH}/Frameworks/{bn}.framework/{bn}"], check=True)
+            run(["ldid", "-S", "-M", f"{fs}/{bn}"], check=True)
         else:
-            run(["ldid", "-S", "-M", f"{APP_PATH}/Frameworks/{bn}"], check=True)
+            run(["ldid", "-S", "-M", fs], check=True)
         print(f"[*] fakesigned {fs}")
     changed = 1
+
+if args.e:
+    if os.path.exists(f"{APP_PATH}/PlugIns"):
+        rmtree(f"{APP_PATH}/PlugIns")
+        print("[*] removed app extensions")
+        changed = 1
+    else:
+        print("[?] no app extensions to remove")
 
 # checking if anything was actually changed
 if not changed:
     print("[!] nothing was changed, output file will not be created")
-    cleanup(EXTRACT_DIR, True)
+    sys.exit()
 
 # zipping everything back into an ipa
 os.chdir(EXTRACT_DIR)
@@ -288,5 +310,5 @@ if "/" in args.o:
     os.makedirs(o2, exist_ok=True)
 move(f"{EXTRACT_DIR}/{os.path.basename(args.o)}", args.o)
 print(f"[*] generated ipa at {args.o}")
-print("[*] deleting temporary directory..")
-cleanup(EXTRACT_DIR, True)
+# print("[*] deleting temporary directory..")
+# cleanup(EXTRACT_DIR, True)
