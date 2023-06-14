@@ -181,13 +181,13 @@ if args.f:
         print(f"[*] successfully injected {bn}")
     for tweak in args.f:
         bn = os.path.basename(tweak)
-        if tweak.endswith(".framework") and not "CydiaSubstrate" in tweak:
+        if tweak.endswith(".framework") and "CydiaSubstrate" not in tweak:
             copytree(tweak, f"{APP_PATH}/Frameworks/{bn}")
             print(f"[*] successfully injected {bn}")
         elif tweak.endswith(".appex"):
             copytree(tweak, f"{APP_PATH}/PlugIns/{bn}")
             print(f"[*] successfully copied {bn} to PlugIns")
-        elif tweak not in dylibs and not tweak.endswith(".deb") and not "CydiaSubstrate" in tweak:
+        elif tweak not in dylibs and not tweak.endswith(".deb") and "CydiaSubstrate" not in tweak:
             if os.path.isdir(tweak):
                 copytree(tweak, f"{APP_PATH}/{bn}")
             else:
