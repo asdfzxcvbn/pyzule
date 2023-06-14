@@ -310,5 +310,3 @@ if "/" in args.o:
     os.makedirs(o2, exist_ok=True)
 move(f"{EXTRACT_DIR}/{os.path.basename(args.o)}", args.o)
 print(f"[*] generated ipa at {args.o}")
-# print("[*] deleting temporary directory..")
-# cleanup(EXTRACT_DIR, True)
