@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/Library/Frameworks/Python.framework/Versions/3.10/bin/python3
 import argparse
 import sys
 import os
@@ -17,7 +17,7 @@ changed = 0
 # check os compatibility
 system = system()
 if system == "Windows":
-    print("windows is not currently supported.")
+    print("windows is not currently supported. install wsl and use pyzule there.")
     sys.exit(1)
 
 # set/get all args
@@ -67,7 +67,7 @@ if os.path.exists(args.o):
         print("[>] quitting.")
         sys.exit()
 EXTRACT_DIR = f".pyzule-{time()}"
-REAL_EXTRACT_DIR = f"{os.getcwd()}/{EXTRACT_DIR}"
+REAL_EXTRACT_DIR = os.path.join(os.getcwd(), EXTRACT_DIR)
 remove = []
 
 
@@ -92,8 +92,8 @@ print("[*] extracted ipa successfully")
 
 # checking if everything exists (to see if it's a valid ipa)
 try:
-    APP_PATH = glob(f"{EXTRACT_DIR}/Payload/*.app")[0]
-    PLIST_PATH = glob(f"{APP_PATH}/Info.plist")[0]
+    APP_PATH = glob(os.path.join(EXTRACT_DIR, "Payload", "*.app"))[0]
+    PLIST_PATH = glob(os.path.join(APP_PATH, "Info.plist"))[0]
 except IndexError:
     print("[!] couldn't find Payload folder and/or Info.plist file, invalid ipa specified")
     sys.exit(1)
@@ -103,13 +103,14 @@ except IndexError:
 if args.f:
     with open(PLIST_PATH, "rb") as pl:
         BINARY = load(pl)["CFBundleExecutable"]
-    run(f"ldid -e {APP_PATH}/{BINARY} > {APP_PATH}/pyzule_entitlements", shell=True, check=True)
-    run(["ldid", "-r", f"{APP_PATH}/{BINARY}"], check=True)
+    BINARY_PATH = os.path.join(APP_PATH, BINARY)
+    run(f"ldid -e {BINARY_PATH} > {os.path.join(APP_PATH, 'pyzule_entitlements')}", shell=True, check=True)
+    run(["ldid", "-r", BINARY_PATH], check=True)
     print(f"[*] removed codesignature")
     if any(i.endswith(".appex") for i in args.f):
-        os.makedirs(f"{APP_PATH}/PlugIns", exist_ok=True)
+        os.makedirs(os.path.join(APP_PATH, "PlugIns"), exist_ok=True)
     if any(i.endswith(known) for i in args.f for known in (".deb", ".dylib", ".framework")):
-        os.makedirs(f"{APP_PATH}/Frameworks", exist_ok=True)
+        os.makedirs(os.path.join(APP_PATH, "Frameworks"), exist_ok=True)
         deb_counter = 0
     dylibs = [d for d in args.f if d.endswith(".dylib")]
     id_injected = dylibs + [f for f in args.f if ".framework" in f and "CydiaSubstrate.framework" not in f]
@@ -122,16 +123,16 @@ if args.f:
             continue
         bn = os.path.basename(deb)
         print(f"[*] extracting {bn}..")
-        output = f"{EXTRACT_DIR}/{deb_counter}"
+        output = os.path.join(EXTRACT_DIR, deb_counter)
         os.makedirs(output)
-        os.makedirs(f"{output}/e")
+        os.makedirs(os.path.join(output, "e"))
         if system == "Linux":
             run(["ar", "-x", deb, f"--output={output}"], check=True)
         else:
             run(["tar", "-xf", deb, "-C", output], check=True)
-        data_tar = glob(f"{output}/data.*")[0]
-        run(["tar", "-xf", data_tar, "-C", f"{output}/e"], check=True)
-        for dirpath, dirnames, filenames in os.walk(f"{output}/e"):
+        data_tar = glob(os.path.join(output, "data.*"))[0]
+        run(["tar", "-xf", data_tar, "-C", os.path.join(output, "e")], check=True)
+        for dirpath, dirnames, filenames in os.walk(os.path.join(output, "e")):
             for filename in filenames:
                 if filename.endswith(".dylib"):
                     src_path = os.path.join(dirpath, filename)
@@ -167,8 +168,8 @@ if args.f:
             run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)
             run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)  # some dylibs have this
             if not substrate_injected:
-                if not os.path.exists(f"{APP_PATH}/Frameworks/CydiaSubstrate.framework"):
-                    copytree(f"{USER_DIR}/CydiaSubstrate.framework", f"{APP_PATH}/Frameworks/CydiaSubstrate.framework")
+                if not os.path.exists(os.path.join(APP_PATH, "Frameworks", "CydiaSubstrate.framework")):
+                    copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, "Frameworks", "CydiaSubstrate.framework"))
                 print("[*] injected CydiaSubstrate.framework and fixed dependencies")
                 substrate_injected = 1
 
@@ -186,26 +187,26 @@ if args.f:
     print("[*] injecting..")
     for d in dylibs:
         bn = os.path.basename(d)
-        run(["insert_dylib", "--inplace", "--no-strip-codesig", f"@rpath/{bn}", f"{APP_PATH}/{BINARY}"], stdout=DEVNULL, check=True)
-        copyfile(d, f"{APP_PATH}/Frameworks/{bn}")
+        run(["insert_dylib", "--inplace", "--no-strip-codesig", f"@rpath/{bn}", BINARY_PATH], stdout=DEVNULL, check=True)
+        copyfile(d, os.path.join(APP_PATH, "Frameworks", bn))
         print(f"[*] successfully injected {bn}")
     for tweak in args.f:
         bn = os.path.basename(tweak)
         if tweak.endswith(".framework") and "CydiaSubstrate" not in tweak:
-            copytree(tweak, f"{APP_PATH}/Frameworks/{bn}")
+            copytree(tweak, os.path.join(APP_PATH, Frameworks, bn))
             print(f"[*] successfully injected {bn}")
         elif tweak.endswith(".appex"):
-            copytree(tweak, f"{APP_PATH}/PlugIns/{bn}")
+            copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
             print(f"[*] successfully copied {bn} to PlugIns")
         elif tweak not in dylibs and not tweak.endswith(".deb") and "CydiaSubstrate" not in tweak:
             if os.path.isdir(tweak):
-                copytree(tweak, f"{APP_PATH}/{bn}")
+                copytree(tweak, os.path.join(APP_PATH, bn))
             else:
-                copyfile(tweak, f"{APP_PATH}/{bn}")
+                copyfile(tweak, os.path.join(APP_PATH, bn))
             print(f"[*] successfully copied {bn} to app root")
     changed = 1
 
-    run(["ldid", f"-S{APP_PATH}/pyzule_entitlements", f"{APP_PATH}/{BINARY}"], check=True)
+    run(["ldid", f"-S{os.path.join(APP_PATH, 'pyzule_entitlements')}", BINARY_PATH], check=True)
     print(f"[*] restored app entitlements")
 
 with open(PLIST_PATH, "rb") as p:
@@ -223,7 +224,7 @@ if args.u:
 # removing watch app (if specified)
 if args.w:
     try:
-        rmtree(f"{APP_PATH}/Watch")
+        rmtree(os.path.join(APP_PATH, "Watch"))
         print("[*] removed watch app")
         changed = 1
     except FileNotFoundError:
@@ -266,20 +267,20 @@ with open(PLIST_PATH, "wb") as p:
 if args.s:
     with open(PLIST_PATH, "rb") as pl:
         BINARY = load(pl)["CFBundleExecutable"]
-    run(["ldid", "-S", "-M", f"{APP_PATH}/{BINARY}"], check=True)
+    run(["ldid", "-S", "-M", os.path.join(APP_PATH, BINARY)], check=True)
     print(f"[*] fakesigned {BINARY}")
-    for fs in glob(f"{APP_PATH}/Frameworks/*.dylib") + glob(f"{APP_PATH}/Frameworks/*.framework"):
+    for fs in glob(os.path.join(APP_PATH, "Frameworks", "*.dylib")) + glob(os.path.join(APP_PATH, "Frameworks", "*.framework")):
         bn = os.path.basename(fs)
         if ".framework" in fs:
-            run(["ldid", "-S", "-M", f"{fs}/{bn[:-10]}"], check=True)
+            run(["ldid", "-S", "-M", os.path.join(fs, bn[:-10])], check=True)
         else:
             run(["ldid", "-S", "-M", fs], check=True)
         print(f"[*] fakesigned {bn}")
     changed = 1
 
 if args.e:
-    if os.path.exists(f"{APP_PATH}/PlugIns"):
-        rmtree(f"{APP_PATH}/PlugIns")
+    if os.path.exists(os.path.join(APP_PATH, "PlugIns")):
+        rmtree(os.path.join(APP_PATH, "PlugIns"))
         print("[*] removed app extensions")
         changed = 1
     else:
@@ -298,7 +299,6 @@ run(["zip", f"-{args.c}", "-r", os.path.basename(args.o), "Payload"], stdout=DEV
 # cleanup when everything is done
 os.chdir(WORKING_DIR)
 if "/" in args.o:
-    o2 = args.o.replace(os.path.basename(args.o), "")
-    os.makedirs(o2, exist_ok=True)
-move(f"{EXTRACT_DIR}/{os.path.basename(args.o)}", args.o)
+    os.makedirs(args.o.replace(os.path.basename(args.o), ""), exist_ok=True)
+move(os.path.join(EXTRACT_DIR, os.path.basename(args.o)), args.o)
 print(f"[*] generated ipa at {args.o}")
