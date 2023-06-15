@@ -123,7 +123,7 @@ if args.f:
             continue
         bn = os.path.basename(deb)
         print(f"[*] extracting {bn}..")
-        output = os.path.join(EXTRACT_DIR, deb_counter)
+        output = os.path.join(EXTRACT_DIR, str(deb_counter))
         os.makedirs(output)
         os.makedirs(os.path.join(output, "e"))
         if system == "Linux":
