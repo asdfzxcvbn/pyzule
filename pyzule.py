@@ -187,7 +187,7 @@ if args.f:
     print("[*] injecting..")
     for d in dylibs:
         bn = os.path.basename(d)
-        run(["insert_dylib", "--inplace", "--no-strip-codesig", f"@rpath/{bn}", BINARY_PATH], stdout=DEVNULL, check=True)
+        run(["insert_dylib", "--inplace", "--no-strip-codesig", "--all-yes", f"@rpath/{bn}", BINARY_PATH], stdout=DEVNULL, check=True)
         copyfile(d, os.path.join(APP_PATH, "Frameworks", bn))
         print(f"[*] successfully injected {bn}")
     for tweak in args.f:
