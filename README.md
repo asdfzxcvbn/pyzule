@@ -53,7 +53,7 @@ options:
 ### requirements
 
 #### cli tools
-you need `git`, `gcc`, `zip`, and `tar`. you also need `ar` if you're on linux.
+you need `git`, `gcc`, `zip`, `unzip`, and `tar`. you also need `ar` if you're on linux.
 
 #### insert_dylib
 you have to build this yourself.
