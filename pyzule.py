@@ -193,7 +193,7 @@ if args.f:
     for tweak in args.f:
         bn = os.path.basename(tweak)
         if tweak.endswith(".framework") and "CydiaSubstrate" not in tweak:
-            copytree(tweak, os.path.join(APP_PATH, Frameworks, bn))
+            copytree(tweak, os.path.join(APP_PATH, "Frameworks", bn))
             print(f"[*] successfully injected {bn}")
         elif tweak.endswith(".appex"):
             copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
