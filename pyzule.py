@@ -71,6 +71,14 @@ REAL_EXTRACT_DIR = os.path.join(os.getcwd(), EXTRACT_DIR)
 remove = []
 
 
+def check_cryptid(EXEC_PATH):
+    crypt = str(run(["otool", "-l", EXEC_PATH], capture_output=True, check=True)).split("\\n")
+    if any("cryptid 1" in line for line in crypt):
+        print("[!] app is encrypted, injecting and fakesigning not available")
+        print("[!] run your pyzule command again without -f or -s")
+        sys.exit(1)
+
+
 def cleanup():
     print("[*] deleting temporary directory..")
     rmtree(REAL_EXTRACT_DIR)
@@ -104,9 +112,10 @@ if args.f:
     with open(PLIST_PATH, "rb") as pl:
         BINARY = load(pl)["CFBundleExecutable"]
     BINARY_PATH = os.path.join(APP_PATH, BINARY)
+    check_cryptid(BINARY_PATH)
     run(f"ldid -e {BINARY_PATH} > {os.path.join(APP_PATH, 'pyzule_entitlements')}", shell=True, check=True)
     run(["ldid", "-r", BINARY_PATH], check=True)
-    print(f"[*] removed codesignature")
+    print("[*] removed codesignature")
     if any(i.endswith(".appex") for i in args.f):
         os.makedirs(os.path.join(APP_PATH, "PlugIns"), exist_ok=True)
     if any(i.endswith(known) for i in args.f for known in (".deb", ".dylib", ".framework")):
@@ -207,7 +216,7 @@ if args.f:
     changed = 1
 
     run(["ldid", f"-S{os.path.join(APP_PATH, 'pyzule_entitlements')}", BINARY_PATH], check=True)
-    print(f"[*] restored app entitlements")
+    print("[*] restored app entitlements")
 
 with open(PLIST_PATH, "rb") as p:
     plist = load(p)
@@ -267,7 +276,9 @@ with open(PLIST_PATH, "wb") as p:
 if args.s:
     with open(PLIST_PATH, "rb") as pl:
         BINARY = load(pl)["CFBundleExecutable"]
-    run(["ldid", "-S", "-M", os.path.join(APP_PATH, BINARY)], check=True)
+    BINARY_PATH = os.path.join(APP_PATH, BINARY)
+    check_cryptid(BINARY_PATH)
+    run(["ldid", "-S", "-M", BINARY_PATH], check=True)
     print(f"[*] fakesigned {BINARY}")
     for fs in glob(os.path.join(APP_PATH, "Frameworks", "*.dylib")) + glob(os.path.join(APP_PATH, "Frameworks", "*.framework")):
         bn = os.path.basename(fs)
