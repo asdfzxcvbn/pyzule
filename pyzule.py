@@ -72,7 +72,7 @@ remove = []
 
 
 def check_cryptid(EXEC_PATH):
-    crypt = str(run(["otool", "-l", EXEC_PATH], capture_output=True)).split("\\n")
+    crypt = str(run(["otool", "-l", EXEC_PATH], capture_output=True, check=True)).split("\\n")
     if any("cryptid 1" in line for line in crypt):
         print("[!] app is encrypted, injecting and fakesigning not available")
         print("[!] run your pyzule command again without -f or -s")
