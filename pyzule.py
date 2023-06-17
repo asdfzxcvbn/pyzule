@@ -202,8 +202,8 @@ if args.f:
     for tweak in args.f:
         bn = os.path.basename(tweak)
         if tweak.endswith(".framework") and "CydiaSubstrate" not in tweak:
-            copytree(tweak, os.path.join(APP_PATH, "Frameworks", f"{bn}.framework", bn))
-            run(["insert_dylib", "--inplace", "--no-strip-codesig", "--all-yes", f"@rpath/{bn}.framework/{bn}", BINARY_PATH], stdout=DEVNULL, check=True)
+            copytree(tweak, os.path.join(APP_PATH, "Frameworks", bn))
+            run(["insert_dylib", "--inplace", "--no-strip-codesig", "--all-yes", f"@rpath/{bn}/{bn[:-10]}", BINARY_PATH], stdout=DEVNULL, check=True)
             print(f"[*] successfully injected {bn}")
         elif tweak.endswith(".appex"):
             copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
