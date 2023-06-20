@@ -12,6 +12,7 @@ an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. windows 
 not many right now, but will probably add some in the future if i need them.
 
 - inject deb, dylib, framework, bundle, and appex files and automatically fix dependencies when possible
+- automatically fix dependencies on CydiaSubstrate, librocketbootstrap, and libmryipc
 - copy any unknown file/folder types to app root
 - use a custom compression level
 - change app name, version, and bundle id
@@ -21,13 +22,14 @@ not many right now, but will probably add some in the future if i need them.
 - remove watch app
 - remove app extensions
 - fakesign the output ipa
+- inject into @executable_path instead of @rpath
 
 ## usage
 you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i ipa -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e]
+usage: pyzule [-h] -i ipa -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e] [-p]
 
 an azule "clone" written in python3.
 
@@ -44,8 +46,9 @@ options:
   -w                    remove watch app
   -m                    set MinimumOSVersion to iOS 10.0
   -d                    enable files access
-  -s                    fakesigns the ipa (for use with appsync/trollstore)
+  -s                    fakesigns the ipa (for use with appsync)
   -e                    remove app extensions
+  -p                    inject into @executable_path
 ```
 
 ## installation
