@@ -3,23 +3,33 @@ from os import system, path, chdir, remove, makedirs
 from requests import get
 from platform import system as osname
 USER_DIR = path.expanduser("~/.zxcvbn")
-SUBSTRATE = path.join(USER_DIR, "CydiaSubstrate.framework")
 
 if osname() == "Windows":
     print("windows is not supported.")
     sys.exit(1)
 
-if not path.exists(USER_DIR):
-    makedirs(USER_DIR)
+makedirs(USER_DIR, exist_ok=True)
 chdir(USER_DIR)
 
-if not path.exists(SUBSTRATE):
+if not path.exists("CydiaSubstrate.framework"):
     print("[*] downloading CydiaSubstrate..")
     with open("CydiaSubstrate.framework.zip", "wb") as ss:
         ss.write(get("https://cdn.discordapp.com/attachments/1099871910155796495/1117506544091799623/CydiaSubstrate.framework.zip").content)
     system("unzip CydiaSubstrate.framework.zip")
     remove("CydiaSubstrate.framework.zip")
     print("[*] downloaded CydiaSubstrate")
+
+if not path.exists("librocketbootstrap.dylib"):
+    print("[*] downloading librocketbootstrap..")
+    with open("librocketbootstrap.dylib", "wb") as ss:
+        ss.write(get("https://cdn.discordapp.com/attachments/1105635370885992458/1120562207860736010/librocketbootstrap.dylib").content)
+    print("[*] downloaded librocketbootstrap")
+
+if not path.exists("libmryipc.dylib"):
+    print("[*] downloading libmryipc..")
+    with open("libmryipc.dylib", "wb") as ss:
+        ss.write(get("https://cdn.discordapp.com/attachments/1105635370885992458/1120562207458070568/libmryipc.dylib").content)
+    print("[*] downloaded libmryipc")
 
 print("[*] downloading pyzule..")
 with open("pyzule.py", "wb") as p:
