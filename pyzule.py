@@ -50,6 +50,8 @@ parser.add_argument("-s", action="store_true",
                     help="fakesigns the ipa (for use with appsync)")
 parser.add_argument("-e", action="store_true",
                     help="remove app extensions")
+parser.add_argument("-p", action="store_true",
+                    help="inject into @executable_path")
 args = parser.parse_args()
 
 # checking received args
@@ -69,6 +71,13 @@ if os.path.exists(args.o):
 EXTRACT_DIR = f".pyzule-{time()}"
 REAL_EXTRACT_DIR = os.path.join(os.getcwd(), EXTRACT_DIR)
 remove = []
+if args.p:
+    inject_path = ""  # @executable_path
+    inject_path_exec = "@executable_path"
+    print("[*] will inject into @executable_path")
+else:
+    inject_path = "Frameworks"  # @rpath
+    inject_path_exec = "@rpath"
 
 
 def check_cryptid(EXEC_PATH):
@@ -121,7 +130,7 @@ if args.f:
     print("[*] removed codesignature")
     if any(i.endswith(".appex") for i in args.f):
         os.makedirs(os.path.join(APP_PATH, "PlugIns"), exist_ok=True)
-    if any(i.endswith(known) for i in args.f for known in (".deb", ".dylib", ".framework")):
+    if any(i.endswith(known) for i in args.f for known in (".deb", ".dylib", ".framework")) and inject_path:
         os.makedirs(os.path.join(APP_PATH, "Frameworks"), exist_ok=True)
         deb_counter = 0
     dylibs = [d for d in args.f if d.endswith(".dylib")]
@@ -183,25 +192,25 @@ if args.f:
 
         for dep in deps_temp:
             if "substrate" in dep.lower():
-                run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)
-                run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", "@rpath/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)  # some dylibs have this
+                run(["install_name_tool", "-change", "/Library/Frameworks/CydiaSubstrate.framework/CydiaSubstrate", f"{inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)
+                run(["install_name_tool", "-change", "@executable_path/libsubstrate.dylib", f"{inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate", dylib], check=True)  # some dylibs have this
                 if not substrate_injected:
-                    if not os.path.exists(os.path.join(APP_PATH, "Frameworks", "CydiaSubstrate.framework")):
-                        copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, "Frameworks", "CydiaSubstrate.framework"))
+                    if not os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
+                        copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
                     print("[*] injected CydiaSubstrate.framework and fixed dependencies")
                     substrate_injected = 1
             if "librocketbootstrap" in dep.lower():
-                run(["install_name_tool", "-change", "/usr/lib/librocketbootstrap.dylib", "@rpath/librocketbootstrap.dylib", dylib], check=True)
+                run(["install_name_tool", "-change", "/usr/lib/librocketbootstrap.dylib", f"{inject_path_exec}/librocketbootstrap.dylib", dylib], check=True)
                 if not rocketbootstrap_injected:
-                    if not os.path.exists(os.path.join(APP_PATH, "Frameworks", "librocketbootstrap.dylib")):
-                        copyfile(os.path.join(USER_DIR, "librocketbootstrap.dylib"), os.path.join(APP_PATH, "Frameworks", "librocketbootstrap.dylib"))
+                    if not os.path.exists(os.path.join(APP_PATH, inject_path, "librocketbootstrap.dylib")):
+                        copyfile(os.path.join(USER_DIR, "librocketbootstrap.dylib"), os.path.join(APP_PATH, inject_path, "librocketbootstrap.dylib"))
                     print("[*] injected librocketbootstrap.dylib and fixed dependencies")
                     rocketbootstrap_injected = 1
             if "libmryipc" in dep.lower():
-                run(["install_name_tool", "-change", "/usr/lib/libmryipc.dylib", "@rpath/libmryipc.dylib", dylib], check=True)
+                run(["install_name_tool", "-change", "/usr/lib/libmryipc.dylib", f"{inject_path_exec}/libmryipc.dylib", dylib], check=True)
                 if not mryipc_injected:
-                    if not os.path.exists(os.path.join(APP_PATH, "Frameworks", "libmryipc.dylib")):
-                        copyfile(os.path.join(USER_DIR, "libmryipc.dylib"), os.path.join(APP_PATH, "Frameworks", "libmryipc.dylib"))
+                    if not os.path.exists(os.path.join(APP_PATH, inject_path, "libmryipc.dylib")):
+                        copyfile(os.path.join(USER_DIR, "libmryipc.dylib"), os.path.join(APP_PATH, inject_path, "libmryipc.dylib"))
                     print("[*] injected libmryipc.dylib and fixed dependencies")
                     mryipc_injected = 1
 
@@ -210,18 +219,18 @@ if args.f:
                 if os.path.basename(known) in dep:
                     bn = os.path.basename(dep)
                     if dep.endswith(".dylib"):
-                        run(["install_name_tool", "-change", dep, f"@rpath/{bn}", dylib], check=True)
-                        print(f"[*] fixed dependency in {dylib}: {dep} -> @rpath/{bn}")
+                        run(["install_name_tool", "-change", dep, f"{inject_path_exec}/{bn}", dylib], check=True)
+                        print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/{bn}")
                     elif ".framework" in dep:
-                        run(["install_name_tool", "-change", dep, f"@rpath/{bn}.framework/{bn}", dylib], check=True)
-                        print(f"[*] fixed dependency in {dylib}: {dep} -> @rpath/{bn}.framework/{bn}")
+                        run(["install_name_tool", "-change", dep, f"{inject_path_exec}/{bn}.framework/{bn}", dylib], check=True)
+                        print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/{bn}.framework/{bn}")
 
     print("[*] injecting..")
     for d in dylibs:
         bn = os.path.basename(d)
-        run(["insert_dylib", "--inplace", "--no-strip-codesig", "--all-yes", f"@rpath/{bn}", BINARY_PATH], stdout=DEVNULL, check=True)
+        run(["insert_dylib", "--inplace", "--no-strip-codesig", "--all-yes", f"{inject_path_exec}/{bn}", BINARY_PATH], stdout=DEVNULL, check=True)
         try:
-            copyfile(d, os.path.join(APP_PATH, "Frameworks", bn))
+            copyfile(d, os.path.join(APP_PATH, inject_path, bn))
         except FileExistsError:
             pass
         print(f"[*] successfully injected {bn}")
@@ -229,8 +238,8 @@ if args.f:
         bn = os.path.basename(tweak)
         try:
             if tweak.endswith(".framework") and "CydiaSubstrate" not in tweak:
-                copytree(tweak, os.path.join(APP_PATH, "Frameworks", bn))
-                run(["insert_dylib", "--inplace", "--no-strip-codesig", "--all-yes", f"@rpath/{bn}/{bn[:-10]}", BINARY_PATH], stdout=DEVNULL, check=True)
+                copytree(tweak, os.path.join(APP_PATH, inject_path, bn))
+                run(["insert_dylib", "--inplace", "--no-strip-codesig", "--all-yes", f"{inject_path_exec}/{bn}/{bn[:-10]}", BINARY_PATH], stdout=DEVNULL, check=True)
                 print(f"[*] successfully injected {bn}")
             elif tweak.endswith(".appex"):
                 copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
@@ -310,7 +319,7 @@ if args.s:
     check_cryptid(BINARY_PATH)
     run(["ldid", "-S", "-M", BINARY_PATH], check=True)
     print(f"[*] fakesigned {BINARY}")
-    for fs in glob(os.path.join(APP_PATH, "Frameworks", "*.dylib")) + glob(os.path.join(APP_PATH, "Frameworks", "*.framework")):
+    for fs in glob(os.path.join(APP_PATH, inject_path, "*.dylib")) + glob(os.path.join(APP_PATH, inject_path, "*.framework")):
         bn = os.path.basename(fs)
         if ".framework" in fs:
             run(["ldid", "-S", "-M", os.path.join(fs, bn[:-10])], check=True)
