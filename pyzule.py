@@ -83,10 +83,13 @@ def cleanup():
     print("[*] deleting temporary directory..")
     rmtree(REAL_EXTRACT_DIR)
     for r in remove:
-        if os.path.isdir(r):
-            rmtree(r)
-        else:
-            os.remove(r)
+        try:
+            if os.path.isdir(r):
+                rmtree(r)
+            else:
+                os.remove(r)
+        except FileNotFoundError:
+            continue
 
 
 register(cleanup)
@@ -145,7 +148,8 @@ if args.f:
                 if filename.endswith(".dylib"):
                     src_path = os.path.join(dirpath, filename)
                     dest_path = os.path.join(WORKING_DIR, filename)
-                    move(src_path, dest_path)
+                    if not os.path.exists(dest_path):
+                        move(src_path, dest_path)
                     dylibs.append(filename)
                     id_injected.append(filename)
                     remove.append(filename)
@@ -153,7 +157,8 @@ if args.f:
                 if dirname.endswith(".bundle") or dirname.endswith(".framework"):
                     src_path = os.path.join(dirpath, dirname)
                     dest_path = os.path.join(WORKING_DIR, dirname)
-                    move(src_path, dest_path)
+                    if not os.path.exists(dest_path):
+                        move(src_path, dest_path)
                     args.f.append(dirname)
                     if ".framework" in dirname:
                         id_injected.append(dirname)
@@ -200,19 +205,22 @@ if args.f:
         print(f"[*] successfully injected {bn}")
     for tweak in args.f:
         bn = os.path.basename(tweak)
-        if tweak.endswith(".framework") and "CydiaSubstrate" not in tweak:
-            copytree(tweak, os.path.join(APP_PATH, "Frameworks", bn))
-            run(["insert_dylib", "--inplace", "--no-strip-codesig", "--all-yes", f"@rpath/{bn}/{bn[:-10]}", BINARY_PATH], stdout=DEVNULL, check=True)
-            print(f"[*] successfully injected {bn}")
-        elif tweak.endswith(".appex"):
-            copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
-            print(f"[*] successfully copied {bn} to PlugIns")
-        elif tweak not in dylibs and not tweak.endswith(".deb") and "CydiaSubstrate" not in tweak:
-            if os.path.isdir(tweak):
-                copytree(tweak, os.path.join(APP_PATH, bn))
-            else:
-                copyfile(tweak, os.path.join(APP_PATH, bn))
-            print(f"[*] successfully copied {bn} to app root")
+        try:
+            if tweak.endswith(".framework") and "CydiaSubstrate" not in tweak:
+                copytree(tweak, os.path.join(APP_PATH, "Frameworks", bn))
+                run(["insert_dylib", "--inplace", "--no-strip-codesig", "--all-yes", f"@rpath/{bn}/{bn[:-10]}", BINARY_PATH], stdout=DEVNULL, check=True)
+                print(f"[*] successfully injected {bn}")
+            elif tweak.endswith(".appex"):
+                copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
+                print(f"[*] successfully copied {bn} to PlugIns")
+            elif tweak not in dylibs and not tweak.endswith(".deb") and "CydiaSubstrate" not in tweak:
+                if os.path.isdir(tweak):
+                    copytree(tweak, os.path.join(APP_PATH, bn))
+                else:
+                    copyfile(tweak, os.path.join(APP_PATH, bn))
+                print(f"[*] successfully copied {bn} to app root")
+        except FileExistsError:
+            continue
     changed = 1
 
     run(["ldid", f"-S{os.path.join(APP_PATH, 'pyzule_entitlements')}", BINARY_PATH], check=True)
