@@ -319,10 +319,12 @@ if args.s:
     check_cryptid(BINARY_PATH)
     run(["ldid", "-S", "-M", BINARY_PATH], check=True)
     print(f"[*] fakesigned {BINARY}")
-    for fs in glob(os.path.join(APP_PATH, inject_path, "*.dylib")) + glob(os.path.join(APP_PATH, inject_path, "*.framework")):
+    for fs in glob(os.path.join(APP_PATH, inject_path, "*.dylib")) + glob(os.path.join(APP_PATH, inject_path, "*.framework")) + glob(os.path.join(APP_PATH, "PlugIns", "*.appex")):
         bn = os.path.basename(fs)
         if ".framework" in fs:
             run(["ldid", "-S", "-M", os.path.join(fs, bn[:-10])], check=True)
+        elif ".appex" in fs:
+            run(["ldid", "-S", "-M", os.path.join(fs, bn[:-6])], check=True)
         else:
             run(["ldid", "-S", "-M", fs], check=True)
         print(f"[*] fakesigned {bn}")
