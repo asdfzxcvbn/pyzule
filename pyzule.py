@@ -125,8 +125,9 @@ if args.f:
     if any(i.endswith(".appex") for i in args.f):
         os.makedirs(os.path.join(APP_PATH, "PlugIns"), exist_ok=True)
 
-    if any(i.endswith(known) for i in args.f for known in (".deb", ".dylib", ".framework")) and inject_path:
-        os.makedirs(os.path.join(APP_PATH, "Frameworks"), exist_ok=True)
+    if any(i.endswith(known) for i in args.f for known in (".deb", ".dylib", ".framework")):
+        if inject_path:
+            os.makedirs(os.path.join(APP_PATH, "Frameworks"), exist_ok=True)
         deb_counter = 0
 
     dylibs = [d for d in args.f if d.endswith(".dylib")]
