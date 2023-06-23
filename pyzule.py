@@ -338,7 +338,15 @@ if args.s:
     check_cryptid(BINARY_PATH)
     run(["ldid", "-S", "-M", BINARY_PATH], check=True)
     print(f"[*] fakesigned {BINARY}")
-    tfs = glob(os.path.join(APP_PATH, "*.dylib")) + glob(os.path.join(APP_PATH, "*.framework")) + glob(os.path.join(APP_PATH, "PlugIns", "*.appex")) + glob(os.path.join(APP_PATH, "Frameworks", "*.dylib")) + glob(os.path.join(APP_PATH, "Frameworks", "*.framework"))
+
+    PATTERNS = (
+        "*.dylib", "*.framework",
+        os.path.join("PlugIns", "*.appex"),
+        os.path.join("Frameworks", "*.dylib"),
+        os.path.join("Frameworks", "*.framework")
+    )
+    tfs = sum((glob(os.path.join(APP_PATH, p)) for p in PATTERNS), [])
+
     for fs in tfs:
         bn = os.path.basename(fs)
         if ".framework" in fs:
