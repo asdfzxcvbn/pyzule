@@ -89,7 +89,7 @@ def check_cryptid(EXEC_PATH):
 
 def cleanup():
     print("[*] deleting temporary directory..")
-    # rmtree(REAL_EXTRACT_DIR)
+    rmtree(REAL_EXTRACT_DIR)
 
 
 register(cleanup)
