@@ -305,8 +305,18 @@ if args.v:
 
 # change app bundle id
 if args.b:
+    orig_bundle = plist["CFBundleIdentifier"]
+    print(f"[*] original bundle id is {orig_bundle}")
     plist["CFBundleIdentifier"] = args.b
-    print(f"[*] changed bundle id to {args.b}")
+    for ext in glob(os.path.join(APP_PATH, "PlugIns", "*.appex")):
+        ext_plist = os.path.join(ext, "Info.plist")
+        with open(ext_plist, "rb") as ap:
+            appex_plist = load(ap)
+        appex_plist["CFBundleIdentifier"] = appex_plist["CFBundleIdentifier"].replace(orig_bundle, args.b)
+        with open(ext_plist, "wb") as done:
+            dump(appex_plist, done)
+        print(f"[*] changed {os.path.basename(ext)} bundle id to {appex_plist['CFBundleIdentifier']}")
+    print(f"[*] changed app bundle id to {args.b}")
     changed = 1
 
 with open(PLIST_PATH, "wb") as p:
