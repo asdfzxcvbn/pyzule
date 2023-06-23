@@ -174,7 +174,7 @@ if args.f:
 
     # remove codesign + fix all dependencies
     for dylib in dylibs:
-        actual_path = os.path.join(DYLIBS_PATH, dylib)
+        actual_path = os.path.join(DYLIBS_PATH, os.path.basename(dylib))
         try:
             copyfile(dylib, actual_path)
         except FileNotFoundError:
@@ -225,7 +225,7 @@ if args.f:
 
     print("[*] injecting..")
     for d in dylibs:
-        actual_path = os.path.join(DYLIBS_PATH, d)
+        actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
         bn = os.path.basename(d)
         run(["insert_dylib", "--inplace", "--no-strip-codesig", "--all-yes", f"{inject_path_exec}/{bn}", BINARY_PATH], stdout=DEVNULL, check=True)
         try:
@@ -235,7 +235,7 @@ if args.f:
         print(f"[*] successfully injected {bn}")
     for tweak in args.f:
         bn = os.path.basename(tweak)
-        actual_path = os.path.join(DYLIBS_PATH, tweak)
+        actual_path = os.path.join(DYLIBS_PATH, os.path.basename(tweak))
         try:
             if tweak.endswith(".framework") and "CydiaSubstrate" not in tweak:
                 try:
