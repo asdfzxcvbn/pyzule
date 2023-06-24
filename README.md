@@ -9,7 +9,9 @@
 an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. windows is not currently supported, but it should *(hopefully)* work in wsl. officially supports linux and macos. tested on arch linux and macos mojave w/ intel cpu.
 
 ## features
-not many right now, but will probably add some in the future if i need them.
+~~not many right now, but will probably add some in the future if i need them.~~
+
+open an issue for any feature requests!
 
 - inject deb, dylib, framework, bundle, and appex files and automatically fix dependencies when possible
 - automatically fix dependencies on CydiaSubstrate, librocketbootstrap, and libmryipc
