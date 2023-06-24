@@ -272,11 +272,11 @@ with open(PLIST_PATH, "rb") as p:
 
 # removing UISupportedDevices (if specified)
 if args.u:
-    if "UISupportedDevices" in plist:
+    try:
         del plist["UISupportedDevices"]
         print("[*] removed UISupportedDevices")
         changed = 1
-    else:
+    except KeyError:
         print("[?] UISupportedDevices not present")
 
 # removing watch app (if specified)
@@ -360,11 +360,11 @@ if args.s:
     changed = 1
 
 if args.e:
-    if os.path.exists(os.path.join(APP_PATH, "PlugIns")):
+    try:
         rmtree(os.path.join(APP_PATH, "PlugIns"))
         print("[*] removed app extensions")
         changed = 1
-    else:
+    except FileNotFoundError:
         print("[?] no app extensions to remove")
 
 # checking if anything was actually changed
