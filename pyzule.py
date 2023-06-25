@@ -190,6 +190,7 @@ if args.f:
         deps = [dep.split()[0] for dep in deps_temp if dep.startswith("\t/Library/") or dep.startswith("\t/usr/lib")]
 
         for dep in deps_temp:
+            dep = dep.split()[0]
             if "substrate" in dep.lower():
                 run(["install_name_tool", "-change", dep, f"{inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate", actual_path], check=True)
                 if not substrate_injected:
@@ -197,7 +198,7 @@ if args.f:
                         copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
                     print("[*] injected CydiaSubstrate.framework")
                     substrate_injected = 1
-                print(f"[*] fixed dependency in {dylib}: {dep} -> @rpath/CydiaSubstrate.framework/CydiaSubstrate")
+                print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate")
             if "librocketbootstrap" in dep.lower():
                 run(["install_name_tool", "-change", dep, f"{inject_path_exec}/librocketbootstrap.dylib", actual_path], check=True)
                 if not rocketbootstrap_injected:
@@ -205,7 +206,7 @@ if args.f:
                         copyfile(os.path.join(USER_DIR, "librocketbootstrap.dylib"), os.path.join(APP_PATH, inject_path, "librocketbootstrap.dylib"))
                     print("[*] injected librocketbootstrap.dylib")
                     rocketbootstrap_injected = 1
-                print(f"[*] fixed dependency in {dylib}: {dep} -> @rpath/librocketbootstrap.dylib")
+                print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/librocketbootstrap.dylib")
             if "libmryipc" in dep.lower():
                 run(["install_name_tool", "-change", dep, f"{inject_path_exec}/libmryipc.dylib", actual_path], check=True)
                 if not mryipc_injected:
@@ -213,7 +214,7 @@ if args.f:
                         copyfile(os.path.join(USER_DIR, "libmryipc.dylib"), os.path.join(APP_PATH, inject_path, "libmryipc.dylib"))
                     print("[*] injected libmryipc.dylib")
                     mryipc_injected = 1
-                print(f"[*] fixed dependency in {dylib}: {dep} -> @rpath/libmryipc.dylib")
+                print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/libmryipc.dylib")
 
         for dep in deps:
             for known in id_injected:
