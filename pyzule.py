@@ -1,4 +1,4 @@
-#!/Library/Frameworks/Python.framework/Versions/3.10/bin/python3
+#!/usr/bin/python3
 import argparse
 import sys
 import os
@@ -187,45 +187,68 @@ if args.f:
                 deps_temp = deps_temp[:ind]
                 break
 
-        deps = [dep.split()[0] for dep in deps_temp if dep.startswith("\t/Library/") or dep.startswith("\t/usr/lib")]
+        deps = []
+        for dep in deps_temp:
+            if any(dep.startswith(s) for s in ("\t/Library/", "\t/usr/lib/", "\t@rpath", "\t@executable_path")):
+                deps.append(dep.split()[0])
 
         for dep in deps_temp:
             dep = dep.split()[0]
+            if dep in ("@rpath/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/libmryipc.dylib", "@rpath/librocketbootstrap.dylib"):
+                injected = 1
+            else:
+                injected = 0
+
             if "substrate" in dep.lower():
                 run(["install_name_tool", "-change", dep, f"{inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate", actual_path], check=True)
+
                 if not substrate_injected:
                     if not os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
                         copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
                     print("[*] injected CydiaSubstrate.framework")
                     substrate_injected = 1
-                print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate")
+
+                if not injected:
+                    print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate")
+
             if "librocketbootstrap" in dep.lower():
                 run(["install_name_tool", "-change", dep, f"{inject_path_exec}/librocketbootstrap.dylib", actual_path], check=True)
+
                 if not rocketbootstrap_injected:
                     if not os.path.exists(os.path.join(APP_PATH, inject_path, "librocketbootstrap.dylib")):
                         copyfile(os.path.join(USER_DIR, "librocketbootstrap.dylib"), os.path.join(APP_PATH, inject_path, "librocketbootstrap.dylib"))
                     print("[*] injected librocketbootstrap.dylib")
                     rocketbootstrap_injected = 1
-                print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/librocketbootstrap.dylib")
+
+                if not injected:
+                    print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/librocketbootstrap.dylib")
+
             if "libmryipc" in dep.lower():
                 run(["install_name_tool", "-change", dep, f"{inject_path_exec}/libmryipc.dylib", actual_path], check=True)
+
                 if not mryipc_injected:
                     if not os.path.exists(os.path.join(APP_PATH, inject_path, "libmryipc.dylib")):
                         copyfile(os.path.join(USER_DIR, "libmryipc.dylib"), os.path.join(APP_PATH, inject_path, "libmryipc.dylib"))
                     print("[*] injected libmryipc.dylib")
                     mryipc_injected = 1
-                print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/libmryipc.dylib")
+
+                if not injected:
+                    print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/libmryipc.dylib")
 
         for dep in deps:
             for known in id_injected:
                 if os.path.basename(known) in dep:
                     bn = os.path.basename(dep)
+
+                    if f"{inject_path_exec}/{bn}" in dep:
+                        continue
+
                     if dep.endswith(".dylib"):
                         run(["install_name_tool", "-change", dep, f"{inject_path_exec}/{bn}", actual_path], check=True)
-                        print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/{bn}")
+                        print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{bn}")
                     elif ".framework" in dep:
                         run(["install_name_tool", "-change", dep, f"{inject_path_exec}/{bn}.framework/{bn}", actual_path], check=True)
-                        print(f"[*] fixed dependency in {dylib}: {dep} -> {inject_path_exec}/{bn}.framework/{bn}")
+                        print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{bn}.framework/{bn}")
 
     for d in dylibs:
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
