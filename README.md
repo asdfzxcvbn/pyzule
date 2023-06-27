@@ -2,7 +2,7 @@
 
 **news:** trollstore compatibility has been fixed. to get the fix, run `sudo rm -rf ~/.zxcvbn/CydiaSubstrate.framework` and rerun the installation script. you also have to reinstall ldid with the new link.
 
-an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. windows is not currently supported, but it should *(hopefully)* work in wsl. officially supports linux and macos. tested on arch linux and macos mojave w/ intel cpu.
+an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. `pyzule` aims to be faster, have better support for manually modified dylibs, and overall have less issues than azule. windows is not currently supported, but it should *(hopefully)* work in wsl. officially supports linux and macos. tested on arch linux and macos mojave w/ intel cpu.
 
 ## features
 ~~not many right now, but will probably add some in the future if i need them.~~
