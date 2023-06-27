@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import argparse
 import sys
 import os
@@ -117,11 +117,8 @@ if args.f:
     BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
     ENTITLEMENTS_FILE = os.path.join(APP_PATH, "pyzule_entitlements").replace(" ", r"\ ")
     check_cryptid(BINARY_PATH)
-    run(f"ldid -e {BINARY_PATH} > {ENTITLEMENTS_FILE}", shell=True, check=True)
-    run(f"ldid -r {BINARY_PATH}", check=True, shell=True)
     DYLIBS_PATH = os.path.join(REAL_EXTRACT_DIR, "pyzule-inject")
     os.makedirs(DYLIBS_PATH, exist_ok=True)  # we'll copy everything we modify (dylibs) here to not mess with the original files
-    print("[*] removed codesignature")
 
     if any(i.endswith(".appex") for i in args.f):
         os.makedirs(os.path.join(APP_PATH, "PlugIns"), exist_ok=True)
@@ -181,7 +178,6 @@ if args.f:
             copyfile(dylib, actual_path)
         except FileNotFoundError:
             pass
-        run(f"ldid -r -M '{actual_path}'", stdout=DEVNULL, check=True, shell=True)
         deps_temp = run(f"otool -L '{actual_path}'", shell=True, capture_output=True, text=True, check=True).stdout.strip().split("\n")[2:]
         for ind, dep in enumerate(deps_temp):
             if "(architecture " in dep:
@@ -289,9 +285,6 @@ if args.f:
         except FileExistsError:
             continue
     changed = 1
-
-    run(f"ldid -S{ENTITLEMENTS_FILE} {BINARY_PATH}", shell=True, check=True)
-    print("[*] restored app entitlements")
 
 with open(PLIST_PATH, "rb") as p:
     plist = load(p)
