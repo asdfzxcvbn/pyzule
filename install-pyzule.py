@@ -12,12 +12,12 @@ makedirs(USER_DIR, exist_ok=True)
 chdir(USER_DIR)
 
 if not path.exists("CydiaSubstrate.framework"):
-    print("[*] downloading CydiaSubstrate..")
-    with open("CydiaSubstrate.framework.zip", "wb") as ss:
-        ss.write(get("https://cdn.discordapp.com/attachments/1099871910155796495/1117506544091799623/CydiaSubstrate.framework.zip").content)
-    system("unzip CydiaSubstrate.framework.zip")
-    remove("CydiaSubstrate.framework.zip")
-    print("[*] downloaded CydiaSubstrate")
+    print("[*] downloading TS-CydiaSubstrate..")
+    with open("TS-CydiaSubstrate.framework.zip", "wb") as ss:
+        ss.write(get("https://cdn.discordapp.com/attachments/1118672500126138550/1123059377264414901/TS-CydiaSubstrate.zip").content)
+    system("unzip TS-CydiaSubstrate.framework.zip")
+    remove("TS-CydiaSubstrate.framework.zip")
+    print("[*] downloaded TS-CydiaSubstrate")
 
 if not path.exists("librocketbootstrap.dylib"):
     print("[*] downloading librocketbootstrap..")

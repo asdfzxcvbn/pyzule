@@ -1,10 +1,6 @@
 # pyzule
 
-~~**note: it is currently not recommended to use pyzule due to compatibility problems. i'll remove this if i figure something out.**~~
-
-**edit:** i was using something from azule to try to fix trollstore compatibility problems. turns out azule's ipa didnt work either. how fun. anyways, this is doing the same thing as azule (pretty much), so it should work wherever azule works. try fakesigning with -s if an ipa doesnt work for you.
-
-~
+**news:** trollstore compatibility has been fixed. to get the fix, run `sudo rm -rf ~/.zxcvbn/CydiaSubstrate.framework` and rerun the installation script. you also have to reinstall ldid with the new link.
 
 an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. windows is not currently supported, but it should *(hopefully)* work in wsl. officially supports linux and macos. tested on arch linux and macos mojave w/ intel cpu.
 
@@ -75,9 +71,8 @@ installed by default on macos. tested on an amd64 linux machine, it probably won
 `sudo wget https://cdn.discordapp.com/attachments/1105232452529700985/1117486649803292837/install_name_tool -O /usr/local/bin/install_name_tool && sudo chmod +x /usr/local/bin/install_name_tool`
 
 #### ldid
-also installed by default on macos.
 
-`sudo wget https://cdn.discordapp.com/attachments/1105232452529700985/1117486650184978433/ldid -O /usr/local/bin/ldid && sudo chmod +x /usr/local/bin/ldid`
+with the recent trollstore fix, using procursus's ldid build is now required. get it for your platform here: https://github.com/ProcursusTeam/ldid/releases, then move it to `/usr/local/bin/ldid`
 
 #### otool
 ALSO installed by default on macos. (who could've guessed?!)
