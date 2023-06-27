@@ -126,7 +126,7 @@ if args.f:
     if any(i.endswith(known) for i in args.f for known in (".deb", ".dylib", ".framework")):
         if inject_path:
             os.makedirs(os.path.join(APP_PATH, "Frameworks"), exist_ok=True)
-            run(f"install_name_tool -add_rpath @executable_path/Frameworks {BINARY_PATH}", shell=True, stdout=DEVNULL, stderr=DEVNULL)
+            run(f"install_name_tool -add_rpath @executable_path/Frameworks {BINARY_PATH}", shell=True, stdout=DEVNULL, stderr=DEVNULL)   # skipcq: PYL-W1510
         deb_counter = 0
 
     dylibs = [d for d in args.f if d.endswith(".dylib")]
