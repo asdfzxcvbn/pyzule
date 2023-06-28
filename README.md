@@ -14,6 +14,7 @@ open an issue for any feature requests!
 - copy any unknown file/folder types to app root
 - use a custom compression level
 - change app name, version, and bundle id
+- add custom url schemes
 - enable documents support
 - set minimum iOS version to 10.0
 - remove UISupportedDevices
@@ -27,7 +28,7 @@ you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i ipa -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e] [-p]
+usage: pyzule [-h] -i ipa -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e] [-p]
 
 an azule "clone" written in python3.
 
@@ -39,6 +40,7 @@ options:
   -v version            modify the app's version
   -b bundle id          modify the app's bundle id
   -c [level]            the compression level of the output ipa (default is 3)
+  -r url [url ...]      url schemes to add
   -f files [files ...]  tweak files to inject into the ipa
   -u                    remove UISupportedDevices
   -w                    remove watch app

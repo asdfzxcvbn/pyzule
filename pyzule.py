@@ -36,6 +36,8 @@ parser.add_argument("-c", metavar="level", type=int, default=3,
                     help="the compression level of the output ipa (default is 3)",
                     action="store", choices=range(1, 10),
                     nargs="?", const=1)
+parser.add_argument("-r", metavar="url", type=str, required=False,
+                    help="url schemes to add", nargs="+")
 parser.add_argument("-f", metavar="files", nargs="+", type=str,
                     help="tweak files to inject into the ipa")
 parser.add_argument("-u", action="store_true",
@@ -59,7 +61,7 @@ if not args.i.endswith(".ipa") or not args.o.endswith(".ipa"):
     parser.error("the input and output file must be an ipa")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
-elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e)):
+elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r)):
     parser.error("at least one option to modify the ipa must be present")
 if os.path.exists(args.o):
     overwrite = input(f"[<] {args.o} already exists. overwrite? [Y/n] ").lower().strip()
@@ -347,6 +349,18 @@ if args.b:
             dump(appex_plist, done)
         print(f"[*] changed {os.path.basename(ext)} bundle id to {appex_plist['CFBundleIdentifier']}")
     print(f"[*] changed app bundle id to {args.b}")
+    changed = 1
+
+# add url schemes to the app
+if args.r:
+    SCHEMES = [scheme.replace("://", "") for scheme in args.r]
+    if "CFBundleURLTypes" not in plist:
+        plist["CFBundleURLTypes"] = []
+    plist["CFBundleURLTypes"].append({
+        "CFBundleURLName": "fyi.zxcvbn.pyzule",
+        "CFBundleURLSchemes": SCHEMES
+    })
+    print("[*] added url schemes:", ", ".join(SCHEMES))
     changed = 1
 
 with open(PLIST_PATH, "wb") as p:
