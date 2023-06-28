@@ -317,6 +317,7 @@ if args.m:
 # enable documents support
 if args.d:
     plist["UISupportsDocumentBrowser"] = True
+    plist["UIFileSharingEnabled"] = True
     print("[*] enabled documents support")
     changed = 1
 
