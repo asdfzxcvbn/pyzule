@@ -194,10 +194,6 @@ if args.f:
 
         for dep in deps_temp:
             dep = dep.split()[0]
-            if dep in ("@rpath/CydiaSubstrate.framework/CydiaSubstrate", "@rpath/libmryipc.dylib", "@rpath/librocketbootstrap.dylib"):
-                injected = 1
-            else:
-                injected = 0
 
             if "substrate" in dep.lower():
                 run(f"install_name_tool -change {dep} {inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate {actual_path}", shell=True, check=True)
@@ -208,7 +204,7 @@ if args.f:
                     print("[*] injected CydiaSubstrate.framework")
                     substrate_injected = 1
 
-                if not injected and dep != f"{inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate":
+                if dep != f"{inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate":
                     print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate")
 
             if "librocketbootstrap" in dep.lower():
@@ -220,7 +216,7 @@ if args.f:
                     print("[*] injected librocketbootstrap.dylib")
                     rocketbootstrap_injected = 1
 
-                if not injected and dep != f"{inject_path_exec}/librocketbootstrap.dylib":
+                if dep != f"{inject_path_exec}/librocketbootstrap.dylib":
                     print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/librocketbootstrap.dylib")
 
             if "libmryipc" in dep.lower():
@@ -232,7 +228,7 @@ if args.f:
                     print("[*] injected libmryipc.dylib")
                     mryipc_injected = 1
 
-                if not injected and dep != f"{inject_path_exec}/libmryipc.dylib":
+                if dep != f"{inject_path_exec}/libmryipc.dylib":
                     print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/libmryipc.dylib")
 
         for dep in deps:
