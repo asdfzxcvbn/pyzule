@@ -2,7 +2,7 @@
 
 **news:** trollstore compatibility has been fixed. to get the fix, run `sudo rm -rf ~/.zxcvbn/CydiaSubstrate.framework` and rerun the installation script. you also have to reinstall ldid with the new link.
 
-an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. `pyzule` aims to be faster, have better support for manually modified dylibs, and overall have less issues than azule. windows is not currently supported, but it should *(hopefully)* work in wsl. officially supports linux and macos. tested on arch linux and macos mojave w/ intel cpu.
+an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. `pyzule` aims to be faster, have more features, have better support for manually modified dylibs, and overall have less issues than azule. windows is not currently supported, but it should *(hopefully)* work in wsl. officially supports linux and macos. tested on arch linux and macos mojave w/ intel cpu.
 
 ## features
 ~~not many right now, but will probably add some in the future if i need them.~~
@@ -15,6 +15,7 @@ open an issue for any feature requests!
 - use a custom compression level
 - change app name, version, and bundle id
 - add custom url schemes
+- change app icon
 - enable documents support
 - set minimum iOS version to 10.0
 - remove UISupportedDevices
@@ -28,7 +29,7 @@ you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i ipa -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e] [-p]
+usage: pyzule [-h] -i ipa -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-k icon] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e] [-p]
 
 an azule "clone" written in python3.
 
@@ -40,6 +41,7 @@ options:
   -v version            modify the app's version
   -b bundle id          modify the app's bundle id
   -c [level]            the compression level of the output ipa (default is 3)
+  -k icon               an image file to use as the app icon
   -r url [url ...]      url schemes to add
   -f files [files ...]  tweak files to inject into the ipa
   -u                    remove UISupportedDevices
