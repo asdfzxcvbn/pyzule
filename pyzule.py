@@ -38,7 +38,7 @@ parser.add_argument("-c", metavar="level", type=int, default=3,
                     action="store", choices=range(1, 10),
                     nargs="?", const=1)
 parser.add_argument("-k", metavar="icon", type=str, required=False,
-                    help="an image file to use as the app icon")
+                    help="an image file to use as the app icon (may not work due to springboard caching)")
 parser.add_argument("-r", metavar="url", type=str, required=False,
                     help="url schemes to add", nargs="+")
 parser.add_argument("-f", metavar="files", nargs="+", type=str,
@@ -186,12 +186,14 @@ if args.f:
 
     # remove codesign + fix all dependencies
     for dylib in dylibs:
-        actual_path = os.path.join(DYLIBS_PATH, os.path.basename(dylib))
+        dylib_bn = os.path.basename(dylib)
+        actual_path = os.path.join(DYLIBS_PATH, dylib_bn)
         try:
             copyfile(dylib, actual_path)
         except FileNotFoundError:
             pass
         run(f"ldid -S -M '{actual_path}'", shell=True, check=True)
+        run(f"install_name_tool -id {inject_path_exec}/{dylib_bn} '{actual_path}'", shell=True, check=True)
         deps_temp = run(f"otool -L '{actual_path}'", shell=True, capture_output=True, text=True, check=True).stdout.strip().split("\n")[2:]
         for ind, dep in enumerate(deps_temp):
             if "(architecture " in dep:
