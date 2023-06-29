@@ -92,6 +92,12 @@ def check_cryptid(EXEC_PATH):
         sys.exit(1)
 
 
+def get_icons(icon_type, plist, app_path, icons):
+    for icon in plist[icon_type]["CFBundlePrimaryIcon"]["CFBundleIconFiles"]:
+        icons.update(i for i in glob(os.path.join(app_path, icon + "*.png")))
+    return icons
+
+
 def cleanup():
     print("[*] deleting temporary directory..")
     rmtree(REAL_EXTRACT_DIR)
@@ -367,8 +373,7 @@ if args.r:
 
 if args.k:
     IMG_PATH = os.path.join(EXTRACT_DIR, "pyzule_img.png")
-    APP_ICON_PATH = os.path.join(APP_PATH, "pyzule_icon.png")
-
+    
     # convert to png
     if not args.k.endswith(".png"):
         with Image.open(args.k) as img:
@@ -376,17 +381,21 @@ if args.k:
     else:
         copyfile(args.k, IMG_PATH)
 
-    # we don't need this - i'm using esign's method of changing app icons (which works? idk how.)
-    if "CFBundleIcons" in plist:
-        del plist["CFBundleIcons"]
-    if "CFBundleIcons~ipad" in plist:
-        del plist["CFBundleIcons~ipad"]
+    ICONS_PRESENT = 1 if "CFBundleIcons" in plist else 0
+    IPAD_ICONS_PRESENT = 1 if "CFBundleIcons~ipad" in plist else 0
+    icons = set()  # set of paths to every icon file
 
-    with Image.open(IMG_PATH) as img:
-        img.resize((120, 120)).save(APP_ICON_PATH)
-    copyfile(APP_ICON_PATH, os.path.join(APP_PATH, "pyzule_icon@2x.png"))
-    copyfile(APP_ICON_PATH, os.path.join(APP_PATH, "pyzule_icon@3x.png"))
-    plist["CFBundleIconFiles"] = ["pyzule_icon.png", "pyzule_icon@2x.png", "pyzule_icon@3x.png"]  # is this really necessary? idk!
+    if ICONS_PRESENT:
+        icons = get_icons("CFBundleIcons", plist, APP_PATH, icons)
+    if IPAD_ICONS_PRESENT:
+        icons = get_icons("CFBundleIcons~ipad", plist, APP_PATH, icons)
+
+    for icon in icons:
+        with Image.open(icon) as img:
+            width, height = img.size
+        os.remove(icon)
+        with Image.open(IMG_PATH) as img:
+            img.resize((width, height)).save(icon)
     print("[*] updated app icon")
     changed = 1 
 
