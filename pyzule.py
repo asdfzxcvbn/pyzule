@@ -373,7 +373,7 @@ if args.r:
 
 if args.k:
     IMG_PATH = os.path.join(EXTRACT_DIR, "pyzule_img.png")
-    
+
     # convert to png
     if not args.k.endswith(".png"):
         with Image.open(args.k) as img:
