@@ -15,7 +15,7 @@ open an issue for any feature requests!
 - use a custom compression level
 - change app name, version, and bundle id
 - add custom url schemes
-- change app icon
+- change app icon (buggy due to caching)
 - enable documents support
 - set minimum iOS version to 10.0
 - remove UISupportedDevices
