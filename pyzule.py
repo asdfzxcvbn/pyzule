@@ -383,13 +383,11 @@ if args.k:
     else:
         copyfile(args.k, IMG_PATH)
 
-    ICONS_PRESENT = 1 if "CFBundleIcons" in plist else 0
-    IPAD_ICONS_PRESENT = 1 if "CFBundleIcons~ipad" in plist else 0
     icons = set()  # set of paths to every icon file
 
-    if ICONS_PRESENT:
+    if "CFBundleIcons" in plist:
         icons = get_icons("CFBundleIcons", plist, APP_PATH, icons)
-    if IPAD_ICONS_PRESENT:
+    if "CFBundleIcons~ipad" in plist:
         icons = get_icons("CFBundleIcons~ipad", plist, APP_PATH, icons)
 
     for icon in icons:
@@ -398,6 +396,7 @@ if args.k:
         os.remove(icon)
         with Image.open(IMG_PATH) as img:
             img.resize((width, height)).save(icon)
+
     print("[*] updated app icon")
     changed = 1 
 
