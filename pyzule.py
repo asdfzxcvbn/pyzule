@@ -10,6 +10,7 @@ from zipfile import ZipFile
 from atexit import register
 from time import time
 from glob import glob
+from PIL import Image
 WORKING_DIR = os.getcwd()
 USER_DIR = os.path.expanduser("~/.zxcvbn")
 changed = 0
@@ -36,6 +37,8 @@ parser.add_argument("-c", metavar="level", type=int, default=3,
                     help="the compression level of the output ipa (default is 3)",
                     action="store", choices=range(1, 10),
                     nargs="?", const=1)
+parser.add_argument("-k", metavar="icon", type=str, required=False,
+                    help="an image file to use as the app icon")
 parser.add_argument("-r", metavar="url", type=str, required=False,
                     help="url schemes to add", nargs="+")
 parser.add_argument("-f", metavar="files", nargs="+", type=str,
@@ -61,7 +64,7 @@ if not args.i.endswith(".ipa") or not args.o.endswith(".ipa"):
     parser.error("the input and output file must be an ipa")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
-elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r)):
+elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k)):
     parser.error("at least one option to modify the ipa must be present")
 if os.path.exists(args.o):
     overwrite = input(f"[<] {args.o} already exists. overwrite? [Y/n] ").lower().strip()
@@ -87,6 +90,12 @@ def check_cryptid(EXEC_PATH):
         print("[!] app is encrypted, injecting and fakesigning not available")
         print("[!] run your pyzule command again without -f or -s")
         sys.exit(1)
+
+
+def get_icons(icon_type, plist, app_path, icons):
+    for icon in plist[icon_type]["CFBundlePrimaryIcon"]["CFBundleIconFiles"]:
+        icons.update(i for i in glob(os.path.join(app_path, icon + "*.png")))
+    return icons
 
 
 def cleanup():
@@ -361,6 +370,34 @@ if args.r:
     })
     print("[*] added url schemes:", ", ".join(SCHEMES))
     changed = 1
+
+if args.k:
+    IMG_PATH = os.path.join(EXTRACT_DIR, "pyzule_img.png")
+    
+    # convert to png
+    if not args.k.endswith(".png"):
+        with Image.open(args.k) as img:
+            img.save(IMG_PATH, "PNG")
+    else:
+        copyfile(args.k, IMG_PATH)
+
+    ICONS_PRESENT = 1 if "CFBundleIcons" in plist else 0
+    IPAD_ICONS_PRESENT = 1 if "CFBundleIcons~ipad" in plist else 0
+    icons = set()  # set of paths to every icon file
+
+    if ICONS_PRESENT:
+        icons = get_icons("CFBundleIcons", plist, APP_PATH, icons)
+    if IPAD_ICONS_PRESENT:
+        icons = get_icons("CFBundleIcons~ipad", plist, APP_PATH, icons)
+
+    for icon in icons:
+        with Image.open(icon) as img:
+            width, height = img.size
+        os.remove(icon)
+        with Image.open(IMG_PATH) as img:
+            img.resize((width, height)).save(icon)
+    print("[*] updated app icon")
+    changed = 1 
 
 with open(PLIST_PATH, "wb") as p:
     dump(plist, p)
