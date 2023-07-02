@@ -459,7 +459,7 @@ if OUTPUT_IS_IPA:
     print(f"[*] generating ipa using compression level {args.c}..")
     if not INPUT_IS_IPA:
         os.makedirs("Payload")
-        run(f"mv {INPUT_BASENAME} Payload/{INPUT_BASENAME}", shell=True, check=True)
+        run(f"mv '{INPUT_BASENAME}' 'Payload/{INPUT_BASENAME}'", shell=True, check=True)
     run(f"zip -{args.c} -r '{os.path.basename(args.o)}' Payload", shell=True, stdout=DEVNULL, check=True)
 else:
     print("[*] moving app to output..")
@@ -472,6 +472,6 @@ if OUTPUT_IS_IPA:
     move(os.path.join(EXTRACT_DIR, os.path.basename(args.o)), args.o)
     print(f"[*] generated ipa at {args.o}")
 else:
-    run(f"mv {APP_PATH} {os.path.join(EXTRACT_DIR, os.path.basename(args.o))}", shell=True, check=True)
-    run(f"mv {os.path.join(EXTRACT_DIR, os.path.basename(args.o))} {args.o}", shell=True, check=True)
+    run(f"mv '{APP_PATH}' '{os.path.join(EXTRACT_DIR, os.path.basename(args.o))}'", shell=True, check=True)
+    run(f"mv '{os.path.join(EXTRACT_DIR, os.path.basename(args.o))}' '{args.o}'", shell=True, check=True)
     print(f"[*] generated app at {args.o}")
