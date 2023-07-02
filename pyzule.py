@@ -24,9 +24,9 @@ if system == "Windows":
 # set/get all args
 parser = argparse.ArgumentParser(description="an azule \"clone\" written in python3.")
 parser.add_argument("-i", metavar="ipa", type=str, required=True,
-                    help="the ipa to patch")
+                    help="the .ipa/.app to patch")
 parser.add_argument("-o", metavar="output", type=str, required=True,
-                    help="the name of the patched ipa that will be created")
+                    help="the name of the patched .ipa/.app that will be created")
 parser.add_argument("-n", metavar="name", type=str, required=False,
                     help="modify the app's name")
 parser.add_argument("-v", metavar="version", type=str, required=False,
@@ -60,8 +60,8 @@ parser.add_argument("-p", action="store_true",
 args = parser.parse_args()
 
 # checking received args
-if not args.i.endswith(".ipa") or not args.o.endswith(".ipa"):
-    parser.error("the input and output file must be an ipa")
+if not (args.i.endswith(".ipa") or args.i.endswith(".app")) or not (args.o.endswith(".ipa") or args.o.endswith(".app")):
+    parser.error("the input and output file must be a .ipa (file) or .app (folder)")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
 elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k)):
@@ -107,14 +107,24 @@ register(cleanup)
 
 
 # extracting ipa
-print("[*] extracting ipa..")
-with ZipFile(args.i, "r") as ipa:
-    ipa.extractall(path=EXTRACT_DIR)
-print("[*] extracted ipa successfully")
+INPUT_IS_IPA = 1 if args.i.endswith(".ipa") else 0
+OUTPUT_IS_IPA = 1 if args.o.endswith(".ipa") else 0
+if INPUT_IS_IPA:
+    print("[*] extracting ipa..")
+    with ZipFile(args.i, "r") as ipa:
+        ipa.extractall(path=EXTRACT_DIR)
+    print("[*] extracted ipa successfully")
 
 # checking if everything exists (to see if it's a valid ipa)
 try:
-    APP_PATH = glob(os.path.join(EXTRACT_DIR, "Payload", "*.app"))[0]
+    INPUT_BASENAME = os.path.basename(args.i)
+    if INPUT_IS_IPA:
+        APP_PATH = glob(os.path.join(EXTRACT_DIR, "Payload", "*.app"))[0]
+    else:
+        print("[*] copying app to temporary directory..")
+        copytree(args.i, os.path.join(EXTRACT_DIR, INPUT_BASENAME))
+        print("[*] copied app")
+        APP_PATH = glob(os.path.join(EXTRACT_DIR, INPUT_BASENAME))[0]
     PLIST_PATH = glob(os.path.join(APP_PATH, "Info.plist"))[0]
 except IndexError:
     print("[!] couldn't find Payload folder and/or Info.plist file, invalid ipa specified")
@@ -440,17 +450,28 @@ if args.e:
 
 # checking if anything was actually changed
 if not changed:
-    print("[!] nothing was changed, output file will not be created")
+    print("[!] nothing was changed, output will not be created")
     sys.exit()
 
-# zipping everything back into an ipa
+# zipping everything back into an ipa/app
 os.chdir(EXTRACT_DIR)
-print(f"[*] generating ipa using compression level {args.c}..")
-run(f"zip -{args.c} -r '{os.path.basename(args.o)}' Payload", shell=True, stdout=DEVNULL, check=True)
+if OUTPUT_IS_IPA:
+    print(f"[*] generating ipa using compression level {args.c}..")
+    if not INPUT_IS_IPA:
+        os.makedirs("Payload")
+        run(f"mv {INPUT_BASENAME} Payload/{INPUT_BASENAME}", shell=True, check=True)
+    run(f"zip -{args.c} -r '{os.path.basename(args.o)}' Payload", shell=True, stdout=DEVNULL, check=True)
+else:
+    print("[*] moving app to output..")
 
 # cleanup when everything is done
 os.chdir(WORKING_DIR)
 if "/" in args.o:
     os.makedirs(args.o.replace(os.path.basename(args.o), ""), exist_ok=True)
-move(os.path.join(EXTRACT_DIR, os.path.basename(args.o)), args.o)
-print(f"[*] generated ipa at {args.o}")
+if OUTPUT_IS_IPA:
+    move(os.path.join(EXTRACT_DIR, os.path.basename(args.o)), args.o)
+    print(f"[*] generated ipa at {args.o}")
+else:
+    run(f"mv {APP_PATH} {os.path.join(EXTRACT_DIR, os.path.basename(args.o))}", shell=True, check=True)
+    run(f"mv {os.path.join(EXTRACT_DIR, os.path.basename(args.o))} {args.o}", shell=True, check=True)
+    print(f"[*] generated app at {args.o}")

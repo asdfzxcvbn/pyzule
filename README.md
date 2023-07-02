@@ -21,7 +21,7 @@ open an issue for any feature requests!
 - remove UISupportedDevices
 - remove watch app
 - remove app extensions
-- fakesign the output ipa
+- fakesign the output ipa/app
 - inject into @executable_path instead of @rpath
 
 ## usage
