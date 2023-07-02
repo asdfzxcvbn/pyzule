@@ -112,3 +112,4 @@ qr code:
 - [Al4ise](https://github.com/Al4ise) for [Azule](https://github.com/Al4ise/Azule)
 - [tyilo](https://github.com/tyilo) for [insert_dylib](https://github.com/tyilo/insert_dylib)
 - [LeanVel](https://github.com/LeanVel) for [insert_dylib](https://github.com/LeanVel/insert_dylib) for linux
+- [binnichtaktiv](https://github.com/binnichtaktiv) for inspiring me to actually start this project
