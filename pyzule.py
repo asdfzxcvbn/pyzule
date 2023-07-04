@@ -217,6 +217,7 @@ if args.f:
 
         for dep in deps_temp:
             dep = dep.split()[0]
+            dep_actual_path = os.path.join(APP_PATH, inject_path, os.path.basename(dep))
 
             if "substrate" in dep.lower():
                 run(f"install_name_tool -change {dep} {inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate '{actual_path}'", shell=True, check=True)
@@ -224,7 +225,7 @@ if args.f:
                 if not substrate_injected:
                     if not os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
                         copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
-                    print("[*] injected CydiaSubstrate.framework")
+                        print("[*] injected CydiaSubstrate.framework")
                     substrate_injected = 1
 
                 if dep != f"{inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate":
@@ -236,7 +237,13 @@ if args.f:
                 if not rocketbootstrap_injected:
                     if not os.path.exists(os.path.join(APP_PATH, inject_path, "librocketbootstrap.dylib")):
                         copyfile(os.path.join(USER_DIR, "librocketbootstrap.dylib"), os.path.join(APP_PATH, inject_path, "librocketbootstrap.dylib"))
-                    print("[*] injected librocketbootstrap.dylib")
+                        if not os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
+                            copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
+                            print("[*] injected CydiaSubstrate.framework")
+                        substrate_injected = 1
+                        print("[*] injected librocketbootstrap.dylib")
+                    if not inject_path:
+                        run(f"install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate @executable_path/CydiaSubstrate.framework/CydiaSubstrate '{dep_actual_path}'", shell=True, check=True)
                     rocketbootstrap_injected = 1
 
                 if dep != f"{inject_path_exec}/librocketbootstrap.dylib":
@@ -248,7 +255,7 @@ if args.f:
                 if not mryipc_injected:
                     if not os.path.exists(os.path.join(APP_PATH, inject_path, "libmryipc.dylib")):
                         copyfile(os.path.join(USER_DIR, "libmryipc.dylib"), os.path.join(APP_PATH, inject_path, "libmryipc.dylib"))
-                    print("[*] injected libmryipc.dylib")
+                        print("[*] injected libmryipc.dylib")
                     mryipc_injected = 1
 
                 if dep != f"{inject_path_exec}/libmryipc.dylib":
