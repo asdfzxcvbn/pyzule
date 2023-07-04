@@ -20,10 +20,10 @@ if not path.exists("CydiaSubstrate.framework"):
     print("[*] downloaded TS-CydiaSubstrate")
 
 if not path.exists("librocketbootstrap.dylib"):
-    print("[*] downloading librocketbootstrap..")
+    print("[*] downloading librocketbootstrap-fix..")
     with open("librocketbootstrap.dylib", "wb") as ss:
-        ss.write(get("https://cdn.discordapp.com/attachments/1105635370885992458/1120562207860736010/librocketbootstrap.dylib").content)
-    print("[*] downloaded librocketbootstrap")
+        ss.write(get("https://cdn.discordapp.com/attachments/1105635370885992458/1125588473466851328/librocketbootstrap.dylib").content)
+    print("[*] downloaded librocketbootstrap-fix")
 
 if not path.exists("libmryipc.dylib"):
     print("[*] downloading libmryipc..")
