@@ -203,7 +203,7 @@ if args.f:
         except FileNotFoundError:
             pass
         run(f"ldid -S -M '{actual_path}'", shell=True, check=True)
-        run(f"install_name_tool -id {inject_path_exec}/{dylib_bn} '{actual_path}'", shell=True, check=True)
+        run(f"install_name_tool -id {inject_path_exec}/{dylib_bn} '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
         deps_temp = run(f"otool -L '{actual_path}'", shell=True, capture_output=True, text=True, check=True).stdout.strip().split("\n")[2:]
         for ind, dep in enumerate(deps_temp):
             if "(architecture " in dep:
@@ -220,7 +220,7 @@ if args.f:
             dep_actual_path = os.path.join(APP_PATH, inject_path, os.path.basename(dep))
 
             if "substrate" in dep.lower():
-                run(f"install_name_tool -change {dep} {inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate '{actual_path}'", shell=True, check=True)
+                run(f"install_name_tool -change {dep} {inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
 
                 if not substrate_injected:
                     if not os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
@@ -232,7 +232,7 @@ if args.f:
                     print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate")
 
             if "librocketbootstrap" in dep.lower():
-                run(f"install_name_tool -change {dep} {inject_path_exec}/librocketbootstrap.dylib '{actual_path}'", shell=True, check=True)
+                run(f"install_name_tool -change {dep} {inject_path_exec}/librocketbootstrap.dylib '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
 
                 if not rocketbootstrap_injected:
                     if not os.path.exists(os.path.join(APP_PATH, inject_path, "librocketbootstrap.dylib")):
@@ -243,14 +243,14 @@ if args.f:
                         substrate_injected = 1
                         print("[*] injected librocketbootstrap.dylib")
                     if not inject_path:
-                        run(f"install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate @executable_path/CydiaSubstrate.framework/CydiaSubstrate '{dep_actual_path}'", shell=True, check=True)
+                        run(f"install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate @executable_path/CydiaSubstrate.framework/CydiaSubstrate '{dep_actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
                     rocketbootstrap_injected = 1
 
                 if dep != f"{inject_path_exec}/librocketbootstrap.dylib":
                     print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/librocketbootstrap.dylib")
 
             if "libmryipc" in dep.lower():
-                run(f"install_name_tool -change {dep} {inject_path_exec}/libmryipc.dylib '{actual_path}'", shell=True, check=True)
+                run(f"install_name_tool -change {dep} {inject_path_exec}/libmryipc.dylib '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
 
                 if not mryipc_injected:
                     if not os.path.exists(os.path.join(APP_PATH, inject_path, "libmryipc.dylib")):
@@ -270,10 +270,10 @@ if args.f:
                         continue
 
                     if dep.endswith(".dylib"):
-                        run(f"install_name_tool -change {dep} {inject_path_exec}/{bn} '{actual_path}'", shell=True, check=True)
+                        run(f"install_name_tool -change {dep} {inject_path_exec}/{bn} '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{bn}")
                     elif ".framework" in dep:
-                        run(f"install_name_tool -change {dep} {inject_path_exec}/{bn}.framework/{bn} '{actual_path}'", shell=True, check=True)
+                        run(f"install_name_tool -change {dep} {inject_path_exec}/{bn}.framework/{bn} '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{bn}.framework/{bn}")
 
     for d in dylibs:
