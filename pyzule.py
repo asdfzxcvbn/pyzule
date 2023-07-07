@@ -329,11 +329,20 @@ if args.u:
 
 # removing watch app (if specified)
 if args.w:
-    try:
-        rmtree(os.path.join(APP_PATH, "Watch"))
+    WATCH_APPS = tuple(os.path.join(APP_PATH, watchapp) for watchapp in ("Watch", "WatchKit", "com.apple.WatchPlaceholder"))
+    removed_watch = 0
+
+    for watch in WATCH_APPS:
+        try:
+            rmtree(watch)
+            removed_watch = 1
+        except FileNotFoundError:
+            continue
+    
+    if removed_watch:
         print("[*] removed watch app")
         changed = 1
-    except FileNotFoundError:
+    else:
         print("[?] watch app not present")
 
 # set minimum os version (if specified)
