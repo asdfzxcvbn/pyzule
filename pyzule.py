@@ -66,7 +66,7 @@ if not (args.i.endswith(".ipa") or args.i.endswith(".app")) or not (args.o.endsw
     parser.error("the input and output file must be a .ipa (file) or .app (folder)")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
-elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k)):
+elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k, args.x)):
     parser.error("at least one option to modify the ipa must be present")
 if os.path.exists(args.o):
     overwrite = input(f"[<] {args.o} already exists. overwrite? [Y/n] ").lower().strip()
