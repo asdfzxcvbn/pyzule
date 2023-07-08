@@ -39,6 +39,8 @@ parser.add_argument("-c", metavar="level", type=int, default=3,
                     nargs="?", const=1)
 parser.add_argument("-k", metavar="icon", type=str, required=False,
                     help="an image file to use as the app icon (may not work due to springboard caching)")
+parser.add_argument("-x", metavar="entitlements", type=str, required=False,
+                    help="a file containing entitlements to sign the app with")
 parser.add_argument("-r", metavar="url", type=str, required=False,
                     help="url schemes to add", nargs="+")
 parser.add_argument("-f", metavar="files", nargs="+", type=str,
@@ -463,6 +465,15 @@ if args.e:
         changed = 1
     except FileNotFoundError:
         print("[?] no app extensions to remove")
+
+if args.x:
+    with open(PLIST_PATH, "rb") as pl:
+        BINARY = load(pl)["CFBundleExecutable"]
+    BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
+    check_cryptid(BINARY_PATH)
+    run(f"ldid -S{args.x} {BINARY_PATH}", shell=True, check=True)
+    print("[*] signed binary with entitlements file")
+    changed = 1
 
 # checking if anything was actually changed
 if not changed:
