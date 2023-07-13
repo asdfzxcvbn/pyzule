@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-import argparse
-import sys
 import os
-from shutil import rmtree, copyfile, copytree, move
-from subprocess import run, DEVNULL
-from plistlib import load, dump
-from platform import system
-from zipfile import ZipFile
-from atexit import register
-from time import time
-from glob import glob
+import sys
+import argparse
 from PIL import Image
+from glob import glob
+from time import time
+from atexit import register
+from zipfile import ZipFile
+from platform import system
+from plistlib import load, dump
+from subprocess import run, DEVNULL
+from shutil import rmtree, copyfile, copytree, move
 WORKING_DIR = os.getcwd()
 USER_DIR = os.path.expanduser("~/.zxcvbn")
 changed = 0
@@ -62,7 +62,7 @@ parser.add_argument("-p", action="store_true",
 args = parser.parse_args()
 
 # checking received args
-if not (args.i.endswith(".ipa") or args.i.endswith(".app")) or not (args.o.endswith(".ipa") or args.o.endswith(".app")):
+if not (args.i.endswith(".ipa") or os.path.basename(args.i).endswith(".app")) or not (args.o.endswith(".ipa") or os.path.basename(args.o).endswith(".app")):
     parser.error("the input and output file must be a .ipa (file) or .app (folder)")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
@@ -100,6 +100,22 @@ def get_icons(icon_type, plist, app_path, icons):
     return icons
 
 
+def get_plist(path, entry=None):
+    with open(path, "rb") as f:
+        if entry is None:
+            return load(f)
+        else:
+            try:
+                return load(f)[entry]
+            except (IndexError, KeyError):
+                return None
+
+
+def dump_plist(path, new):
+    with open(path, "wb") as f:
+        dump(new, f)
+
+
 def cleanup():
     print("[*] deleting temporary directory..")
     rmtree(REAL_EXTRACT_DIR)
@@ -135,8 +151,7 @@ except IndexError:
 
 # injecting stuff
 if args.f:
-    with open(PLIST_PATH, "rb") as pl:
-        BINARY = load(pl)["CFBundleExecutable"]
+    BINARY = get_plist(PLIST_PATH, "CFBundleExecutable")
     BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
     ENTITLEMENTS_FILE = os.path.join(APP_PATH, "pyzule_entitlements").replace(" ", r"\ ")
     check_cryptid(BINARY_PATH)
@@ -160,7 +175,7 @@ if args.f:
     mryipc_injected = 0
 
     # extracting all debs
-    for deb in args.f:
+    for deb in set(args.f):
         if not deb.endswith(".deb"):
             continue
         bn = os.path.basename(deb)
@@ -192,7 +207,7 @@ if args.f:
                     if ".framework" in dirname:
                         id_injected.append(dirname)
                 if "preferenceloader" in dirname.lower():
-                    print("[!] found dependency on PreferenceLoader, ipa will not work jailed")
+                    print(f"[!] found dependency on PreferenceLoader in {deb}, ipa might not work jailed")
         print(f"[*] extracted {bn} successfully")
         deb_counter += 1
 
@@ -317,8 +332,7 @@ if args.f:
             continue
     changed = 1
 
-with open(PLIST_PATH, "rb") as p:
-    plist = load(p)
+plist = get_plist(PLIST_PATH)
 
 # removing UISupportedDevices (if specified)
 if args.u:
@@ -380,11 +394,9 @@ if args.b:
     plist["CFBundleIdentifier"] = args.b
     for ext in glob(os.path.join(APP_PATH, "PlugIns", "*.appex")):
         ext_plist = os.path.join(ext, "Info.plist")
-        with open(ext_plist, "rb") as ap:
-            appex_plist = load(ap)
+        appex_plist = get_plist(ext_plist)
         appex_plist["CFBundleIdentifier"] = appex_plist["CFBundleIdentifier"].replace(orig_bundle, args.b)
-        with open(ext_plist, "wb") as done:
-            dump(appex_plist, done)
+        dump_plist(ext_plist, appex_plist)
         print(f"[*] changed {os.path.basename(ext)} bundle id to {appex_plist['CFBundleIdentifier']}")
     print(f"[*] changed app bundle id to {args.b}")
     changed = 1
@@ -428,12 +440,10 @@ if args.k:
     print("[*] updated app icon")
     changed = 1 
 
-with open(PLIST_PATH, "wb") as p:
-    dump(plist, p)
+dump_plist(PLIST_PATH, plist)
 
 if args.s:
-    with open(PLIST_PATH, "rb") as pl:
-        BINARY = load(pl)["CFBundleExecutable"]
+    BINARY = get_plist(PLIST_PATH, "CFBundleExecutable")
     BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
     check_cryptid(BINARY_PATH)
     run(f"ldid -S -M {BINARY_PATH}", shell=True, check=True)
@@ -448,14 +458,12 @@ if args.s:
     tfs = sum((glob(os.path.join(APP_PATH, p)) for p in PATTERNS), [])
 
     for fs in tfs:
-        bn = os.path.basename(fs)
-        if ".framework" in fs:
-            run(f"ldid -S -M '{os.path.join(fs, bn[:-10])}'", shell=True, check=True)
-        elif ".appex" in fs:
-            run(f"ldid -S -M '{os.path.join(fs, bn[:-6])}'", shell=True, check=True)
+        if any(s in fs for s in (".framework", ".appex")):
+            FS_EXEC = get_plist(os.path.join(fs, "Info.plist").replace(" ", r"\ "), "CFBundleExecutable")
+            run(f"ldid -S -M '{os.path.join(fs, FS_EXEC)}'", shell=True, check=True)
         else:
             run(f"ldid -S -M '{fs}'", shell=True, check=True)
-        print(f"[*] fakesigned {bn}")
+        print(f"[*] fakesigned {os.path.basename(fs)}")
     changed = 1
 
 if args.e:
@@ -467,8 +475,7 @@ if args.e:
         print("[?] no app extensions to remove")
 
 if args.x:
-    with open(PLIST_PATH, "rb") as pl:
-        BINARY = load(pl)["CFBundleExecutable"]
+    BINARY = get_plist(PLIST_PATH, "CFBundleExecutable")
     BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
     check_cryptid(BINARY_PATH)
     run(f"ldid -S{args.x} {BINARY_PATH}", shell=True, check=True)
