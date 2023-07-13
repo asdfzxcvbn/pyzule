@@ -243,6 +243,8 @@ if args.f:
                     if not os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
                         copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
                         print("[*] injected CydiaSubstrate.framework")
+                    else:
+                        print("[*] existing CydiaSubstrate.framework found")
                     substrate_injected = 1
 
                 if dep != f"{inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate":
