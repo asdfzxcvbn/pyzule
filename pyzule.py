@@ -168,8 +168,9 @@ if args.f:
             run(f"install_name_tool -add_rpath @executable_path/Frameworks {BINARY_PATH}", shell=True, stdout=DEVNULL, stderr=DEVNULL)   # skipcq: PYL-W1510
         deb_counter = 0
 
-    dylibs = [d for d in args.f if d.endswith(".dylib")]
-    id_injected = dylibs + [f for f in args.f if ".framework" in f and "CydiaSubstrate.framework" not in f]
+    dylibs = {d for d in args.f if d.endswith(".dylib")}
+    id_injected = {f for f in args.f if ".framework" in f and "CydiaSubstrate.framework" not in f}
+    id_injected.update(dylibs)
     substrate_injected = 0
     rocketbootstrap_injected = 0
     mryipc_injected = 0
@@ -195,8 +196,8 @@ if args.f:
                     dest_path = os.path.join(DYLIBS_PATH, filename)
                     if not os.path.exists(dest_path):
                         move(src_path, dest_path)
-                    dylibs.append(filename)
-                    id_injected.append(filename)
+                    dylibs.add(filename)
+                    id_injected.add(filename)
             for dirname in dirnames:
                 if dirname.endswith(".bundle") or dirname.endswith(".framework"):
                     src_path = os.path.join(dirpath, dirname)
@@ -205,11 +206,13 @@ if args.f:
                         move(src_path, dest_path)
                     args.f.append(dirname)
                     if ".framework" in dirname:
-                        id_injected.append(dirname)
+                        id_injected.add(dirname)
                 if "preferenceloader" in dirname.lower():
                     print(f"[!] found dependency on PreferenceLoader in {deb}, ipa might not work jailed")
         print(f"[*] extracted {bn} successfully")
         deb_counter += 1
+
+    args.f = set(args.f)
 
     # remove codesign + fix all dependencies
     for dylib in dylibs:
@@ -461,7 +464,7 @@ if args.s:
 
     for fs in tfs:
         if any(s in fs for s in (".framework", ".appex")):
-            FS_EXEC = get_plist(os.path.join(fs, "Info.plist").replace(" ", r"\ "), "CFBundleExecutable")
+            FS_EXEC = get_plist(os.path.join(fs, "Info.plist"), "CFBundleExecutable")
             run(f"ldid -S -M '{os.path.join(fs, FS_EXEC)}'", shell=True, check=True)
         else:
             run(f"ldid -S -M '{fs}'", shell=True, check=True)
