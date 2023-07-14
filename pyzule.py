@@ -9,8 +9,8 @@ from atexit import register
 from zipfile import ZipFile
 from platform import system
 from plistlib import load, dump
-from subprocess import run, DEVNULL
 from shutil import rmtree, copyfile, copytree, move
+from subprocess import run, DEVNULL, CalledProcessError
 WORKING_DIR = os.getcwd()
 USER_DIR = os.path.expanduser("~/.zxcvbn")
 changed = 0
@@ -60,6 +60,10 @@ parser.add_argument("-e", action="store_true",
 parser.add_argument("-p", action="store_true",
                     help="inject into @executable_path")
 args = parser.parse_args()
+
+# sanitize paths
+args.i = os.path.normpath(args.i)
+args.o = os.path.normpath(args.o)
 
 # checking received args
 if not (args.i.endswith(".ipa") or os.path.basename(args.i).endswith(".app")) or not (args.o.endswith(".ipa") or os.path.basename(args.o).endswith(".app")):
@@ -116,6 +120,20 @@ def dump_plist(path, new):
         dump(new, f)
 
 
+def change_plist(success, error, plist, condition, *keys):
+    try:
+        if all(plist[key] == condition for key in keys):
+            print(f"[?] {error}")
+        else:
+            raise KeyError
+    except KeyError:
+        for key in keys:
+            plist[key] = condition
+        print(f"[*] {success}")
+        global changed
+        changed = 1
+
+
 def cleanup():
     print("[*] deleting temporary directory..")
     rmtree(REAL_EXTRACT_DIR)
@@ -145,19 +163,28 @@ try:
         APP_PATH = glob(os.path.join(EXTRACT_DIR, INPUT_BASENAME))[0]
     PLIST_PATH = glob(os.path.join(APP_PATH, "Info.plist"))[0]
 except IndexError:
-    print("[!] couldn't find Payload folder and/or Info.plist file, invalid ipa specified")
+    print("[!] couldn't find Payload folder and/or Info.plist file, invalid ipa/app specified")
     sys.exit(1)
 
+# remove app extensions
+if args.e:
+    try:
+        rmtree(os.path.join(APP_PATH, "PlugIns"))
+        print("[*] removed app extensions")
+        changed = 1
+    except FileNotFoundError:
+        print("[?] no app extensions to remove")
 
 # injecting stuff
 if args.f:
     BINARY = get_plist(PLIST_PATH, "CFBundleExecutable")
     BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
-    ENTITLEMENTS_FILE = os.path.join(APP_PATH, "pyzule_entitlements").replace(" ", r"\ ")
     check_cryptid(BINARY_PATH)
     run(f"ldid -S -M {BINARY_PATH}", shell=True, check=True)
     DYLIBS_PATH = os.path.join(REAL_EXTRACT_DIR, "pyzule-inject")
     os.makedirs(DYLIBS_PATH, exist_ok=True)  # we'll copy everything we modify (dylibs) here to not mess with the original files
+
+    args.f = [os.path.normpath(np) for np in args.f]
 
     if any(i.endswith(".appex") for i in args.f):
         os.makedirs(os.path.join(APP_PATH, "PlugIns"), exist_ok=True)
@@ -311,17 +338,19 @@ if args.f:
         bn = os.path.basename(tweak)
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(tweak))
         try:
-            if tweak.endswith(".framework") and "CydiaSubstrate" not in tweak:
+            if bn.endswith(".framework") and "cydiasubstrate" not in bn.lower():
                 try:
                     copytree(tweak, os.path.join(APP_PATH, inject_path, bn))
+                    framework_exec = get_plist(os.path.join(tweak, "Info.plist"), "CFBundleExecutable")
                 except FileNotFoundError:
                     copytree(actual_path, os.path.join(APP_PATH, inject_path, bn))
-                run(f"insert_dylib --inplace --no-strip-codesig --all-yes {inject_path_exec}/{bn}/{bn[:-10]} {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
+                    framework_exec = get_plist(os.path.join(actual_path, "Info.plist"), "CFBundleExecutable")
+                run(f"insert_dylib --inplace --no-strip-codesig --all-yes {inject_path_exec}/{bn}/{framework_exec} {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
                 print(f"[*] successfully injected {bn}")
-            elif tweak.endswith(".appex"):
+            elif bn.endswith(".appex"):
                 copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
                 print(f"[*] successfully copied {bn} to PlugIns")
-            elif tweak not in dylibs and not tweak.endswith(".deb") and "CydiaSubstrate" not in tweak:
+            elif tweak not in dylibs and not bn.endswith(".deb") and "cydiasubstrate" not in tweak.lower():
                 try:
                     if os.path.isdir(tweak):
                         copytree(tweak, os.path.join(APP_PATH, bn))
@@ -368,29 +397,23 @@ if args.w:
 
 # set minimum os version (if specified)
 if args.m:
-    plist["MinimumOSVersion"] = "10.0"
-    print("[*] set MinimumOSVersion to iOS 10.0")
-    changed = 1
+    change_plist("set MinimumOSVersion to iOS 10.0", "MinimumOSVersion was already 10.0",
+                plist, "10.0", "MinimumOSVersion")
 
 # enable documents support
 if args.d:
-    plist["UISupportsDocumentBrowser"] = True
-    plist["UIFileSharingEnabled"] = True
-    print("[*] enabled documents support")
-    changed = 1
+    change_plist("enabled documents support", "documents support was already enabled",
+                plist, True, "UISupportsDocumentBrowser", "UIFileSharingEnabled")
 
 # change app name
 if args.n:
-    plist["CFBundleDisplayName"] = args.n
-    print(f"[*] changed app name to {args.n}")
-    changed = 1
+    change_plist(f"changed app name to {args.n}", f"app name was already {args.n}",
+                plist, args.n, "CFBundleDisplayName")
 
 # change app version
 if args.v:
-    plist["CFBundleShortVersionString"] = args.v
-    plist["CFBundleVersion"] = args.v
-    print(f"[*] changed app version to {args.v}")
-    changed = 1
+    change_plist(f"changed app version to {args.v}", f"app version was already {args.v}",
+                plist, args.v, "CFBundleShortVersionString", "CFBundleVersion")
 
 # change app bundle id
 if args.b:
@@ -419,6 +442,7 @@ if args.r:
     changed = 1
 
 if args.k:
+    args.k = os.path.normpath(args.k)
     IMG_PATH = os.path.join(EXTRACT_DIR, "pyzule_img.png")
 
     # convert to png
@@ -471,15 +495,9 @@ if args.s:
         print(f"[*] fakesigned {os.path.basename(fs)}")
     changed = 1
 
-if args.e:
-    try:
-        rmtree(os.path.join(APP_PATH, "PlugIns"))
-        print("[*] removed app extensions")
-        changed = 1
-    except FileNotFoundError:
-        print("[?] no app extensions to remove")
-
+# sign app executable with entitlements provided
 if args.x:
+    args.x = os.path.normpath(args.x)
     BINARY = get_plist(PLIST_PATH, "CFBundleExecutable")
     BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
     check_cryptid(BINARY_PATH)
