@@ -9,8 +9,8 @@ from atexit import register
 from zipfile import ZipFile
 from platform import system
 from plistlib import load, dump
+from subprocess import run, DEVNULL
 from shutil import rmtree, copyfile, copytree, move
-from subprocess import run, DEVNULL, CalledProcessError
 WORKING_DIR = os.getcwd()
 USER_DIR = os.path.expanduser("~/.zxcvbn")
 changed = 0
