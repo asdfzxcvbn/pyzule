@@ -66,12 +66,15 @@ args.i = os.path.normpath(args.i)
 args.o = os.path.normpath(args.o)
 
 # checking received args
-if not (args.i.endswith(".ipa") or os.path.basename(args.i).endswith(".app")) or not (args.o.endswith(".ipa") or os.path.basename(args.o).endswith(".app")):
-    parser.error("the input and output file must be a .ipa (file) or .app (folder)")
+if not args.i.endswith(".ipa") and not args.i.endswith(".app"):
+    parser.error("the input file must be an ipa/app")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
 elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k, args.x)):
     parser.error("at least one option to modify the ipa must be present")
+elif not (args.o.endswith(".app") or args.o.endswith(".ipa")):
+    print("[?] file extension not specified, creating ipa")
+    args.o += ".ipa"
 if os.path.exists(args.o):
     overwrite = input(f"[<] {args.o} already exists. overwrite? [Y/n] ").lower().strip()
     if overwrite in ("y", "yes", ""):
