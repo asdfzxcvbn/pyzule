@@ -108,11 +108,10 @@ def get_plist(path, entry=None):
     with open(path, "rb") as f:
         if entry is None:
             return load(f)
-        else:
-            try:
-                return load(f)[entry]
-            except (IndexError, KeyError):
-                return None
+        try:
+            return load(f)[entry]
+        except (IndexError, KeyError):
+            return None
 
 
 def dump_plist(path, new):
@@ -130,7 +129,7 @@ def change_plist(success, error, plist, condition, *keys):
         for key in keys:
             plist[key] = condition
         print(f"[*] {success}")
-        global changed
+        global changed  # skipcq: PYL-W0603
         changed = 1
 
 
@@ -388,7 +387,7 @@ if args.w:
             removed_watch = 1
         except FileNotFoundError:
             continue
-    
+
     if removed_watch:
         print("[*] removed watch app")
         changed = 1
@@ -467,7 +466,7 @@ if args.k:
             img.resize((width, height)).save(icon)
 
     print("[*] updated app icon")
-    changed = 1 
+    changed = 1
 
 dump_plist(PLIST_PATH, plist)
 
