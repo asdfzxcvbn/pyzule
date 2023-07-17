@@ -6,10 +6,10 @@ from PIL import Image
 from glob import glob
 from time import time
 from atexit import register
-from zipfile import ZipFile
 from platform import system
 from plistlib import load, dump
 from subprocess import run, DEVNULL
+from zipfile import ZipFile, BadZipFile
 from shutil import rmtree, copyfile, copytree, move
 WORKING_DIR = os.getcwd()
 USER_DIR = os.path.expanduser("~/.zxcvbn")
@@ -149,8 +149,18 @@ INPUT_IS_IPA = 1 if args.i.endswith(".ipa") else 0
 OUTPUT_IS_IPA = 1 if args.o.endswith(".ipa") else 0
 if INPUT_IS_IPA:
     print("[*] extracting ipa..")
-    with ZipFile(args.i, "r") as ipa:
-        ipa.extractall(path=EXTRACT_DIR)
+    try:
+        os.makedirs(EXTRACT_DIR)
+        with ZipFile(args.i, "r") as ipa:
+            if "Payload/" not in ipa.namelist():
+                raise KeyError
+            ipa.extractall(path=EXTRACT_DIR)
+    except KeyError:
+        print("[!] couldn't find Payload folder, invalid ipa")
+        sys.exit(1)
+    except BadZipFile:
+        print("[!] not a zip/ipa file")
+        sys.exit(1)
     print("[*] extracted ipa successfully")
 
 # checking if everything exists (to see if it's a valid ipa)
@@ -165,7 +175,7 @@ try:
         APP_PATH = glob(os.path.join(EXTRACT_DIR, INPUT_BASENAME))[0]
     PLIST_PATH = glob(os.path.join(APP_PATH, "Info.plist"))[0]
 except IndexError:
-    print("[!] couldn't find Payload folder and/or Info.plist file, invalid ipa/app specified")
+    print("[!] couldn't find .app folder and/or Info.plist file, invalid ipa/app specified")
     sys.exit(1)
 
 # remove app extensions
