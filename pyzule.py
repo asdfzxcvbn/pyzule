@@ -334,13 +334,10 @@ if args.f:
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
         bn = os.path.basename(d)
         run(f"insert_dylib --inplace --no-strip-codesig --all-yes '{inject_path_exec}/{bn}' {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
-        try:
-            copyfile(actual_path, os.path.join(APP_PATH, inject_path, bn))
-            print(f"[*] successfully injected {bn}")
-        except FileExistsError:
-            os.remove(os.path.join(APP_PATH, inject_path, bn))
-            copyfile(actual_path, os.path.join(APP_PATH, inject_path, bn))
+        if os.path.exists(os.path.join(APP_PATH, inject_path, bn)):
             print(f"[*] existing {bn} found, replaced")
+            os.remove(os.path.join(APP_PATH, inject_path, bn))
+        copyfile(actual_path, os.path.join(APP_PATH, inject_path, bn))
 
     for tweak in args.f:
         bn = os.path.basename(tweak)
@@ -538,5 +535,7 @@ if OUTPUT_IS_IPA:
     print(f"[*] generated ipa at {args.o}")
 else:
     run(f"mv '{APP_PATH}' '{os.path.join(EXTRACT_DIR, os.path.basename(args.o))}'", shell=True, check=True)
+    if os.path.exists(args.o):
+        rmtree(args.o)
     run(f"mv '{os.path.join(EXTRACT_DIR, os.path.basename(args.o))}' '{args.o}'", shell=True, check=True)
     print(f"[*] generated app at {args.o}")
