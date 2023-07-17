@@ -12,7 +12,7 @@ an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. `pyzule`
 open an issue for any feature requests!
 
 - inject deb, dylib, framework, bundle, and appex files and automatically fix dependencies when possible
-- automatically fix dependencies on CydiaSubstrate, librocketbootstrap, and libmryipc
+- automatically fix dependencies on CydiaSubstrate, librocketbootstrap, libmryipc, and Cephei*
 - copy any unknown file/folder types to app root
 - use a custom compression level
 - change app name, version, and bundle id
@@ -24,6 +24,7 @@ open an issue for any feature requests!
 - remove watch app
 - remove app extensions
 - fakesign the output ipa/app
+- use custom entitlements for the app
 - inject into @executable_path instead of @rpath
 
 ## usage
@@ -31,19 +32,20 @@ you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i ipa -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-k icon] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e] [-p]
+usage: pyzule [-h] -i input -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-k icon] [-x entitlements] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e] [-p]
 
 an azule "clone" written in python3.
 
 options:
   -h, --help            show this help message and exit
-  -i ipa                the ipa to patch
-  -o output             the name of the patched ipa that will be created
+  -i input              the .ipa/.app to patch
+  -o output             the name of the patched .ipa/.app that will be created
   -n name               modify the app's name
   -v version            modify the app's version
   -b bundle id          modify the app's bundle id
   -c [level]            the compression level of the output ipa (default is 3)
   -k icon               an image file to use as the app icon (may not work due to springboard caching)
+  -x entitlements       a file containing entitlements to sign the app with
   -r url [url ...]      url schemes to add
   -f files [files ...]  tweak files to inject into the ipa
   -u                    remove UISupportedDevices

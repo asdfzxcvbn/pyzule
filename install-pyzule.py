@@ -31,6 +31,30 @@ if not path.exists("libmryipc.dylib"):
         ss.write(get("https://cdn.discordapp.com/attachments/1105635370885992458/1120562207458070568/libmryipc.dylib").content)
     print("[*] downloaded libmryipc")
 
+if not path.exists("Cephei.framework"):
+    print("[*] downloading Cephei..")
+    with open("Cephei.framework.zip", "wb") as ss:
+        ss.write(get("https://cdn.discordapp.com/attachments/1130557037361770526/1130557602951069816/Cephei.framework.zip").content)
+    system("unzip Cephei.framework.zip")
+    remove("Cephei.framework.zip")
+    print("[*] downloaded Cephei")
+
+if not path.exists("CepheiUI.framework"):
+    print("[*] downloading CepheiUI..")
+    with open("CepheiUI.framework.zip", "wb") as ss:
+        ss.write(get("https://cdn.discordapp.com/attachments/1130557037361770526/1130557964185501778/CepheiUI.framework.zip").content)
+    system("unzip CepheiUI.framework.zip")
+    remove("CepheiUI.framework.zip")
+    print("[*] downloaded CepheiUI")
+
+if not path.exists("CepheiPrefs.framework"):
+    print("[*] downloading CepheiPrefs..")
+    with open("CepheiPrefs.framework.zip", "wb") as ss:
+        ss.write(get("https://cdn.discordapp.com/attachments/1130557037361770526/1130558249532407968/CepheiPrefs.framework.zip").content)
+    system("unzip CepheiPrefs.framework.zip")
+    remove("CepheiPrefs.framework.zip")
+    print("[*] downloaded CepheiPrefs")
+
 print("[*] downloading pyzule..")
 with open("pyzule.py", "wb") as p:
     p.write(get("https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py").content)

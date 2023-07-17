@@ -94,6 +94,13 @@ if args.f:
         inject_path = "Frameworks"  # @rpath
         inject_path_exec = "@rpath"
 
+    if (nonexistant := ", ".join(ne for ne in args.f if not os.path.exists(ne))):
+        # yes, TOTALLY required.
+        if len(nonexistant.split(", ")) == 1:
+            print(f"[!] {nonexistant} does not exist")
+        else:
+            print(f"[!] {nonexistant} do not exist")
+        sys.exit(1)
 
 def check_cryptid(EXEC_PATH):
     crypt = str(run(f"otool -l {EXEC_PATH}", capture_output=True, check=True, shell=True)).split("\\n")
@@ -209,12 +216,21 @@ if args.f:
             run(f"install_name_tool -add_rpath @executable_path/Frameworks {BINARY_PATH}", shell=True, stdout=DEVNULL, stderr=DEVNULL)   # skipcq: PYL-W1510
         deb_counter = 0
 
-    dylibs = {d for d in args.f if d.endswith(".dylib")}
-    id_injected = {f for f in args.f if ".framework" in f and "CydiaSubstrate.framework" not in f}
+    common = (
+        "libmryipc.dylib", "librocketboostrap.dylib", "cydiasubstrate.framework",
+        "cephei.framework", "cepheiui.framework", "cepheiprefs.framework"
+    )
+    dylibs = {d for d in args.f if d.endswith(".dylib") and not any(com in d.lower() for com in common)}
+    id_injected = {f for f in args.f if ".framework" in f and not any(com in f.lower() for com in common)}
     id_injected.update(dylibs)
-    substrate_injected = 0
-    rocketbootstrap_injected = 0
-    mryipc_injected = 0
+    (
+        substrate_injected,
+        rocketbootstrap_injected,
+        mryipc_injected,
+        cephei_injected,
+        cepheiui_injected,
+        cepheiprefs_injected
+    ) = [None] * 6
 
     # extracting all debs
     for deb in set(args.f):
@@ -232,7 +248,7 @@ if args.f:
         run(["tar", "-xf", data_tar, "-C", os.path.join(output, "e")], check=True)
         for dirpath, dirnames, filenames in os.walk(os.path.join(output, "e")):
             for filename in filenames:
-                if filename.endswith(".dylib"):
+                if filename.endswith(".dylib") and not any(com in filename.lower() for com in common):
                     src_path = os.path.join(dirpath, filename)
                     dest_path = os.path.join(DYLIBS_PATH, filename)
                     if not os.path.exists(dest_path):
@@ -240,7 +256,7 @@ if args.f:
                     dylibs.add(filename)
                     id_injected.add(filename)
             for dirname in dirnames:
-                if dirname.endswith(".bundle") or dirname.endswith(".framework"):
+                if dirname.endswith(".bundle") or (dirname.endswith(".framework") and not any(com in dirname.lower() for com in common)):
                     src_path = os.path.join(dirpath, dirname)
                     dest_path = os.path.join(DYLIBS_PATH, dirname)
                     if not os.path.exists(dest_path):
@@ -280,37 +296,58 @@ if args.f:
             dep = dep.split()[0]
             dep_actual_path = os.path.join(APP_PATH, inject_path, os.path.basename(dep))
 
-            # check + fix dependencies on substrate, librocketbootstrap, and libmryipc
+            # check + fix dependencies on substrate, librocketbootstrap, libmryipc,
+            # cephei, cepheiui, and cepheiprefs
             # there is definitely a better way to do this.
             for common_name, common_path in {
-                "substrate": "CydiaSubstrate.framework/CydiaSubstrate",
-                "librocketbootstrap": "librocketbootstrap.dylib",
-                "libmryipc": "libmryipc.dylib"
+                "substrate.": "CydiaSubstrate.framework/CydiaSubstrate",
+                "librocketbootstrap.": "librocketbootstrap.dylib",
+                "libmryipc.": "libmryipc.dylib",
+                "cephei.": "Cephei.framework/Cephei",
+                "cepheiui.": "CepheiUI.framework/CepheiUI",
+                "cepheiprefs.": "CepheiPrefs.framework/CepheiPrefs"
             }.items():
                 if common_name in dep.lower():
                     run(f"install_name_tool -change {dep} {inject_path_exec}/{common_path} '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
 
-                    if common_name == "substrate":
+                    # im so sorry but im lazy
+                    if common_name == "substrate.":
                         com_check = substrate_injected
-                    elif common_name == "librocketbootstrap":
+                    elif common_name == "librocketbootstrap.":
                         com_check = rocketbootstrap_injected
-                    else:
+                    elif common_name == "libmryipc.":
                         com_check = mryipc_injected
+                    elif common_name == "cephei.":
+                        com_check = cephei_injected
+                    elif common_name == "cepheiui.":
+                        com_check = cepheiui_injected
+                    else:
+                        com_check = cepheiprefs_injected
 
                     if not com_check:
-                        real_dep_name = common_path[:24]
+                        real_dep_name = common_path.split("/")[0]
                         if not os.path.exists(os.path.join(APP_PATH, inject_path, real_dep_name)):
-                            copytree(os.path.join(USER_DIR, real_dep_name), os.path.join(APP_PATH, inject_path, real_dep_name))
-                            print(f"[*] injected {real_dep_name}")
+                            try:
+                                copytree(os.path.join(USER_DIR, real_dep_name), os.path.join(APP_PATH, inject_path, real_dep_name))
+                            except NotADirectoryError:
+                                copyfile(os.path.join(USER_DIR, real_dep_name), os.path.join(APP_PATH, inject_path, real_dep_name))
+                            print(f"[*] auto-injected {real_dep_name}")
                         else:
                             print(f"[*] existing {real_dep_name} found")
 
-                        if common_name == "substrate":
+                        # im tired.
+                        if common_name == "substrate.":
                             substrate_injected = 1
-                        elif common_name == "librocketbootstrap":
+                        elif common_name == "librocketbootstrap.":
                             rocketbootstrap_injected = 1
-                        else:
+                        elif common_name == "libmryipc.":
                             mryipc_injected = 1
+                        elif common_name == "cephei.":
+                            cephei_injected = 1
+                        elif common_name == "cepheiui.":
+                            cepheiui_injected = 1
+                        else:
+                            cepheiprefs_injected = 1
 
                     if dep != f"{inject_path_exec}/{common_path}":
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{common_path}")
@@ -337,6 +374,8 @@ if args.f:
         if os.path.exists(os.path.join(APP_PATH, inject_path, bn)):
             print(f"[*] existing {bn} found, replaced")
             os.remove(os.path.join(APP_PATH, inject_path, bn))
+        else:
+            print(f"[*] successfully injected {bn}")
         copyfile(actual_path, os.path.join(APP_PATH, inject_path, bn))
 
     for tweak in args.f:
@@ -355,7 +394,10 @@ if args.f:
             elif bn.endswith(".appex"):
                 copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
                 print(f"[*] successfully copied {bn} to PlugIns")
-            elif tweak not in dylibs and not bn.endswith(".deb") and "cydiasubstrate" not in tweak.lower():
+            elif (
+                tweak not in dylibs and not bn.endswith(".deb") and "cydiasubstrate" not in tweak.lower()
+                and not any(com in tweak for com in common)
+            ):
                 try:
                     if os.path.isdir(tweak):
                         copytree(tweak, os.path.join(APP_PATH, bn))
