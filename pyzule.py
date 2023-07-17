@@ -23,7 +23,7 @@ if system == "Windows":
 
 # set/get all args
 parser = argparse.ArgumentParser(description="an azule \"clone\" written in python3.")
-parser.add_argument("-i", metavar="ipa", type=str, required=True,
+parser.add_argument("-i", metavar="input", type=str, required=True,
                     help="the .ipa/.app to patch")
 parser.add_argument("-o", metavar="output", type=str, required=True,
                     help="the name of the patched .ipa/.app that will be created")
@@ -84,20 +84,22 @@ if os.path.exists(args.o):
         sys.exit()
 EXTRACT_DIR = f".pyzule-{time()}"
 REAL_EXTRACT_DIR = os.path.join(os.getcwd(), EXTRACT_DIR)
-if args.p:
-    inject_path = ""  # @executable_path
-    inject_path_exec = "@executable_path"
-    print("[*] will inject into @executable_path")
-else:
-    inject_path = "Frameworks"  # @rpath
-    inject_path_exec = "@rpath"
+
+if args.f:
+    if args.p:
+        inject_path = ""  # @executable_path
+        inject_path_exec = "@executable_path"
+        print("[*] will inject into @executable_path")
+    else:
+        inject_path = "Frameworks"  # @rpath
+        inject_path_exec = "@rpath"
 
 
 def check_cryptid(EXEC_PATH):
     crypt = str(run(f"otool -l {EXEC_PATH}", capture_output=True, check=True, shell=True)).split("\\n")
     if any("cryptid 1" in line for line in crypt):
-        print("[!] app is encrypted, injecting and fakesigning not available")
-        print("[!] run your pyzule command again without -f or -s")
+        print("[!] app is encrypted, injecting, fakesigning, and using custom entitlements not available")
+        print("[!] run your pyzule command again without -f, -s, or -x")
         sys.exit(1)
 
 
@@ -144,7 +146,7 @@ def cleanup():
 register(cleanup)
 
 
-# extracting ipa
+# extracting ipa/copying app
 INPUT_IS_IPA = 1 if args.i.endswith(".ipa") else 0
 OUTPUT_IS_IPA = 1 if args.o.endswith(".ipa") else 0
 if INPUT_IS_IPA:
@@ -163,7 +165,7 @@ if INPUT_IS_IPA:
         sys.exit(1)
     print("[*] extracted ipa successfully")
 
-# checking if everything exists (to see if it's a valid ipa)
+# checking ipa/app validity
 try:
     INPUT_BASENAME = os.path.basename(args.i)
     if INPUT_IS_IPA:
@@ -278,49 +280,40 @@ if args.f:
             dep = dep.split()[0]
             dep_actual_path = os.path.join(APP_PATH, inject_path, os.path.basename(dep))
 
-            if "substrate" in dep.lower():
-                run(f"install_name_tool -change {dep} {inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
+            # check + fix dependencies on substrate, librocketbootstrap, and libmryipc
+            # there is definitely a better way to do this.
+            for common_name, common_path in {
+                "substrate": "CydiaSubstrate.framework/CydiaSubstrate",
+                "librocketbootstrap": "librocketbootstrap.dylib",
+                "libmryipc": "libmryipc.dylib"
+            }.items():
+                if common_name in dep.lower():
+                    run(f"install_name_tool -change {dep} {inject_path_exec}/{common_path} '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
 
-                if not substrate_injected:
-                    if not os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
-                        copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
-                        print("[*] injected CydiaSubstrate.framework")
+                    if common_name == "substrate":
+                        com_check = substrate_injected
+                    elif common_name == "librocketbootstrap":
+                        com_check = rocketbootstrap_injected
                     else:
-                        print("[*] existing CydiaSubstrate.framework found")
-                    substrate_injected = 1
+                        com_check = mryipc_injected
 
-                if dep != f"{inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate":
-                    print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/CydiaSubstrate.framework/CydiaSubstrate")
+                    if not com_check:
+                        real_dep_name = common_path[:24]
+                        if not os.path.exists(os.path.join(APP_PATH, inject_path, real_dep_name)):
+                            copytree(os.path.join(USER_DIR, real_dep_name), os.path.join(APP_PATH, inject_path, real_dep_name))
+                            print(f"[*] injected {real_dep_name}")
+                        else:
+                            print(f"[*] existing {real_dep_name} found")
 
-            if "librocketbootstrap" in dep.lower():
-                run(f"install_name_tool -change {dep} {inject_path_exec}/librocketbootstrap.dylib '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
+                        if common_name == "substrate":
+                            substrate_injected = 1
+                        elif common_name == "librocketbootstrap":
+                            rocketbootstrap_injected = 1
+                        else:
+                            mryipc_injected = 1
 
-                if not rocketbootstrap_injected:
-                    if not os.path.exists(os.path.join(APP_PATH, inject_path, "librocketbootstrap.dylib")):
-                        copyfile(os.path.join(USER_DIR, "librocketbootstrap.dylib"), os.path.join(APP_PATH, inject_path, "librocketbootstrap.dylib"))
-                        if not os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
-                            copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
-                            print("[*] injected CydiaSubstrate.framework")
-                        substrate_injected = 1
-                        print("[*] injected librocketbootstrap.dylib")
-                    if not inject_path:
-                        run(f"install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate @executable_path/CydiaSubstrate.framework/CydiaSubstrate '{dep_actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
-                    rocketbootstrap_injected = 1
-
-                if dep != f"{inject_path_exec}/librocketbootstrap.dylib":
-                    print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/librocketbootstrap.dylib")
-
-            if "libmryipc" in dep.lower():
-                run(f"install_name_tool -change {dep} {inject_path_exec}/libmryipc.dylib '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
-
-                if not mryipc_injected:
-                    if not os.path.exists(os.path.join(APP_PATH, inject_path, "libmryipc.dylib")):
-                        copyfile(os.path.join(USER_DIR, "libmryipc.dylib"), os.path.join(APP_PATH, inject_path, "libmryipc.dylib"))
-                        print("[*] injected libmryipc.dylib")
-                    mryipc_injected = 1
-
-                if dep != f"{inject_path_exec}/libmryipc.dylib":
-                    print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/libmryipc.dylib")
+                    if dep != f"{inject_path_exec}/{common_path}":
+                        print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{common_path}")
 
         for dep in deps:
             for known in id_injected:
@@ -343,9 +336,12 @@ if args.f:
         run(f"insert_dylib --inplace --no-strip-codesig --all-yes '{inject_path_exec}/{bn}' {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
         try:
             copyfile(actual_path, os.path.join(APP_PATH, inject_path, bn))
+            print(f"[*] successfully injected {bn}")
         except FileExistsError:
-            pass
-        print(f"[*] successfully injected {bn}")
+            os.remove(os.path.join(APP_PATH, inject_path, bn))
+            copyfile(actual_path, os.path.join(APP_PATH, inject_path, bn))
+            print(f"[*] existing {bn} found, replaced")
+
     for tweak in args.f:
         bn = os.path.basename(tweak)
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(tweak))
