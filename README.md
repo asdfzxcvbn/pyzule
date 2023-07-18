@@ -17,7 +17,7 @@ open an issue for any feature requests!
 - use a custom compression level
 - change app name, version, and bundle id
 - add custom url schemes
-- change app icon (may not work due to springboard caching)
+- change app icon
 - enable documents support
 - set minimum iOS version to 10.0
 - remove UISupportedDevices
@@ -44,7 +44,7 @@ options:
   -v version            modify the app's version
   -b bundle id          modify the app's bundle id
   -c [level]            the compression level of the output ipa (default is 3)
-  -k icon               an image file to use as the app icon (may not work due to springboard caching)
+  -k icon               an image file to use as the app icon
   -x entitlements       a file containing entitlements to sign the app with
   -r url [url ...]      url schemes to add
   -f files [files ...]  tweak files to inject into the ipa

@@ -38,7 +38,7 @@ parser.add_argument("-c", metavar="level", type=int, default=3,
                     action="store", choices=range(1, 10),
                     nargs="?", const=1)
 parser.add_argument("-k", metavar="icon", type=str, required=False,
-                    help="an image file to use as the app icon (may not work due to springboard caching)")
+                    help="an image file to use as the app icon")
 parser.add_argument("-x", metavar="entitlements", type=str, required=False,
                     help="a file containing entitlements to sign the app with")
 parser.add_argument("-r", metavar="url", type=str, required=False,
@@ -108,12 +108,6 @@ def check_cryptid(EXEC_PATH):
         print("[!] app is encrypted, injecting, fakesigning, and using custom entitlements not available")
         print("[!] run your pyzule command again without -f, -s, or -x")
         sys.exit(1)
-
-
-def get_icons(icon_type, plist, app_path, icons):
-    for icon in plist[icon_type]["CFBundlePrimaryIcon"]["CFBundleIconFiles"]:
-        icons.update(i for i in glob(os.path.join(app_path, icon + "*.png")))
-    return icons
 
 
 def get_plist(path, entry=None):
@@ -455,7 +449,7 @@ if args.d:
 # change app name
 if args.n:
     change_plist(f"changed app name to {args.n}", f"app name was already {args.n}",
-                plist, args.n, "CFBundleDisplayName")
+                plist, args.n, "CFBundleDisplayName", "CFBundleName")
 
 # change app version
 if args.v:
@@ -488,6 +482,7 @@ if args.r:
     print("[*] added url schemes:", ", ".join(SCHEMES))
     changed = 1
 
+# change app icon - using esign's method (which i think guarantees that the icon IS changed)
 if args.k:
     args.k = os.path.normpath(args.k)
     IMG_PATH = os.path.join(EXTRACT_DIR, "pyzule_img.png")
@@ -499,21 +494,22 @@ if args.k:
     else:
         copyfile(args.k, IMG_PATH)
 
-    icons = set()  # set of paths to every icon file
-
     if "CFBundleIcons" in plist:
-        icons = get_icons("CFBundleIcons", plist, APP_PATH, icons)
+        del plist["CFBundleIcons"]
     if "CFBundleIcons~ipad" in plist:
-        icons = get_icons("CFBundleIcons~ipad", plist, APP_PATH, icons)
+        del plist["CFBundleIcons~ipad"]
 
-    for icon in icons:
-        with Image.open(icon) as img:
-            width, height = img.size
-        os.remove(icon)
-        with Image.open(IMG_PATH) as img:
-            img.resize((width, height)).save(icon)
+    icon = f"pyzule-{int(time())}"
+    with Image.open(IMG_PATH) as img:
+        resized = img.resize((120, 120))
+        resized.save(os.path.join(APP_PATH, f"{icon}.png"), "PNG")
+        resized.save(os.path.join(APP_PATH, f"{icon}@2x.png"), "PNG")
+        resized.save(os.path.join(APP_PATH, f"{icon}@3x.png"), "PNG")
+
+    plist["CFBundleIconFiles"] = [f"{icon}.png", f"{icon}@2x.png", f"{icon}@3x.png"]
 
     print("[*] updated app icon")
+    del resized
     changed = 1
 
 dump_plist(PLIST_PATH, plist)
