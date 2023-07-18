@@ -155,7 +155,7 @@ if INPUT_IS_IPA:
     try:
         os.makedirs(EXTRACT_DIR)
         with ZipFile(args.i, "r") as ipa:
-            if "Payload/" not in ipa.namelist():
+            if not any(name.startswith("Payload/") for name in ipa.namelist()):
                 raise KeyError
             ipa.extractall(path=EXTRACT_DIR)
     except KeyError:
