@@ -346,6 +346,7 @@ if args.f:
                     if dep != f"{inject_path_exec}/{common_path}":
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{common_path}")
 
+
         for dep in deps:
             for known in id_injected:
                 if os.path.basename(known) in dep:
@@ -360,6 +361,22 @@ if args.f:
                     elif ".framework" in dep:
                         run(f"install_name_tool -change {dep} {inject_path_exec}/{bn}.framework/{bn} '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{bn}.framework/{bn}")
+
+    # forgot about this earlier.. oops
+    if rocketbootstrap_injected and not substrate_injected:
+        print("[*] auto-injected CydiaSubstrate.framework")
+
+        if args.p:
+            run("install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate " +
+            f"@executable_path/CydiaSubstrate.framework/CydiaSubstrate '{os.path.join(APP_PATH, inject_path)}/librocketbootstrap.dylib'",
+            shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)  # is this how im supposed to do it?
+            print("[*] fixed dependency in librocketbootstrap.dylib: @rpath/CydiaSubstrate.framework/CydiaSubstrate -> @executable_path/CydiaSubstrate.framework/CydiaSubstrate")
+
+        if os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
+            rmtree(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
+            print("[*] existing CydiaSubstrate.framework found, replaced")
+
+        copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
 
     for d in dylibs:
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
