@@ -235,9 +235,9 @@ if args.f:
         os.makedirs(output)
         os.makedirs(os.path.join(output, "e"))
         if system == "Linux":
-            run(f"ar -x {deb} --output={output}", shell=True, check=True)
+            run(f"ar -x '{deb}' --output={output}", shell=True, check=True)
         else:
-            run(f"tar -xf {deb} -C {output}", shell=True, check=True)
+            run(f"tar -xf '{deb}' -C {output}", shell=True, check=True)
         data_tar = glob(os.path.join(output, "data.*"))[0]
         run(["tar", "-xf", data_tar, "-C", os.path.join(output, "e")], check=True)
         for dirpath, dirnames, filenames in os.walk(os.path.join(output, "e")):
