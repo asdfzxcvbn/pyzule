@@ -1,9 +1,4 @@
 # pyzule
-
-**news:** trollstore compatibility has been fixed. to get the fix, run `sudo rm -rf ~/.zxcvbn/CydiaSubstrate.framework` and rerun the installation script. you also have to reinstall ldid with the new link.
-
-**fix - july 3rd, 2023:** i had to fix something with librocketbootstrap. run `rm ~/.zxcvbn/librocketbootstrap.dylib` and rerun the installation script to get the fix. thanks! 
-
 an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. `pyzule` aims to be faster, have more features, have better support for manually modified dylibs, and overall have less issues than azule. windows is not currently supported, but it should *(hopefully)* work in wsl. officially supports linux and macos. tested on arch linux and macos mojave w/ intel cpu.
 
 ## features
