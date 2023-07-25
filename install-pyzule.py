@@ -50,5 +50,5 @@ with open((pz_path := osp.join(DEP_DIR, "pyzule.py")), "wb") as f:
     f.write(get("https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py").content)
 print("[?] if prompted, enter your sudo password to finish installation")
 
-run(["sudo", "-p", "'[<] '", "mv", pz_path, "/usr/local/bin/pyzule"])
-run(["sudo", "-p", "'[<] '", "chmod", "+x", "/usr/local/bin/pyzule"])
+run(["sudo", "-p", "[<] ", "mv", pz_path, "/usr/local/bin/pyzule"])
+run(["sudo", "-p", "[<] ", "chmod", "+x", "/usr/local/bin/pyzule"])
