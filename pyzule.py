@@ -102,13 +102,6 @@ if args.f:
             print(f"[!] {nonexistant} do not exist")
         sys.exit(1)
 
-def check_cryptid(EXEC_PATH):
-    crypt = str(run(f"otool -l {EXEC_PATH}", capture_output=True, check=True, shell=True)).split("\\n")
-    if any("cryptid 1" in line for line in crypt):
-        print("[!] app is encrypted, injecting, fakesigning, and using custom entitlements not available")
-        print("[!] run your pyzule command again without -f, -s, or -x")
-        sys.exit(1)
-
 
 def get_plist(path, entry=None):
     with open(path, "rb") as f:
@@ -177,6 +170,15 @@ try:
         print("[*] copied app")
         APP_PATH = glob(os.path.join(EXTRACT_DIR, INPUT_BASENAME))[0]
     PLIST_PATH = glob(os.path.join(APP_PATH, "Info.plist"))[0]
+    BINARY = get_plist(PLIST_PATH, "CFBundleExecutable")
+    BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
+
+    # checking encryption status
+    crypt = str(run(f"otool -l {BINARY_PATH}", capture_output=True, check=True, shell=True)).split("\\n")
+    if any("cryptid 1" in line for line in crypt) and any((args.f, args.s, args.x)):
+        print("[!] app is encrypted, injecting, fakesigning, and using custom entitlements not available")
+        print("[!] run your pyzule command again without -f, -s, or -x")
+        sys.exit(1)
 except IndexError:
     print("[!] couldn't find .app folder and/or Info.plist file, invalid ipa/app specified")
     sys.exit(1)
@@ -192,9 +194,6 @@ if args.e:
 
 # injecting stuff
 if args.f:
-    BINARY = get_plist(PLIST_PATH, "CFBundleExecutable")
-    BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
-    check_cryptid(BINARY_PATH)
     run(f"ldid -S -M {BINARY_PATH}", shell=True, check=True)
     DYLIBS_PATH = os.path.join(REAL_EXTRACT_DIR, "pyzule-inject")
     os.makedirs(DYLIBS_PATH, exist_ok=True)  # we'll copy everything we modify (dylibs) here to not mess with the original files
@@ -532,9 +531,6 @@ if args.k:
 dump_plist(PLIST_PATH, plist)
 
 if args.s:
-    BINARY = get_plist(PLIST_PATH, "CFBundleExecutable")
-    BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
-    check_cryptid(BINARY_PATH)
     run(f"ldid -S -M {BINARY_PATH}", shell=True, check=True)
     print(f"[*] fakesigned {BINARY}")
 
@@ -557,11 +553,7 @@ if args.s:
 
 # sign app executable with entitlements provided
 if args.x:
-    args.x = os.path.normpath(args.x)
-    BINARY = get_plist(PLIST_PATH, "CFBundleExecutable")
-    BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
-    check_cryptid(BINARY_PATH)
-    run(f"ldid -S{args.x} {BINARY_PATH}", shell=True, check=True)
+    run(f"ldid -S{os.path.normpath(args.x)} {BINARY_PATH}", shell=True, check=True)
     print("[*] signed binary with entitlements file")
     changed = 1
 
