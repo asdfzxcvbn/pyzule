@@ -12,8 +12,6 @@ DEPS = {
     "librocketbootstrap.dylib": "https://cdn.discordapp.com/attachments/1105635370885992458/1125588473466851328/librocketbootstrap.dylib",
     "libmryipc.dylib": "https://cdn.discordapp.com/attachments/1105635370885992458/1120562207458070568/libmryipc.dylib"
 }
-BOLD = "\033[1m"
-END = "\033[0m"
 makedirs(DEP_DIR, exist_ok=True)
 
 
@@ -47,18 +45,9 @@ for dependency, link in DEPS.items():
     else:
         download(dependency, link, "d")
 
-pyzule_type = ""
-while pyzule_type not in ("s", "d"):
-    pyzule_type = input(f"enter \"s\" to install pyzule {BOLD}s{END}table, or \"d\" to install pyzule {BOLD}d{END}ev.\n[<] ").lower().strip()
-
-if pyzule_type == "s":
-    BRANCH = "main"
-else:
-    BRANCH = "dev"
-
 print("\n[*] installing pyzule..")
 with open((pz_path := osp.join(DEP_DIR, "pyzule.py")), "wb") as f:
-    f.write(get(f"https://raw.githubusercontent.com/asdfzxcvbn/pyzule/{BRANCH}/pyzule.py").content)
+    f.write(get("https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py").content)
 print("[?] if prompted, enter your sudo password to finish installation")
 
 run(["sudo", "-p", "'[<] '", "mv", pz_path, "/usr/local/bin/pyzule"])
