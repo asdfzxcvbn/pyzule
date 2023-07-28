@@ -36,10 +36,8 @@ for dep in tuple(DEPS.keys()):
     if osp.exists(osp.join(DEP_DIR, dep)):
         del DEPS[dep]
 
-if DEPS:
-    print(f"[*] downloading missing dependencies ({', '.join(d for d in DEPS)})..")
-
 for dependency, link in DEPS.items():
+    print(f"[*] downloading {dependency}..")
     if dependency.endswith("k"):
         download(dependency, link)
     else:
