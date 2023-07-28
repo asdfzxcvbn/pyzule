@@ -170,15 +170,6 @@ try:
         print("[*] copied app")
         APP_PATH = glob(os.path.join(EXTRACT_DIR, INPUT_BASENAME))[0]
     PLIST_PATH = glob(os.path.join(APP_PATH, "Info.plist"))[0]
-    BINARY = get_plist(PLIST_PATH, "CFBundleExecutable")
-    BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
-
-    # checking encryption status
-    crypt = str(run(f"otool -l {BINARY_PATH}", capture_output=True, check=True, shell=True)).split("\\n")
-    if any("cryptid 1" in line for line in crypt) and any((args.f, args.s, args.x)):
-        print("[!] app is encrypted, injecting, fakesigning, and using custom entitlements not available")
-        print("[!] run your pyzule command again without -f, -s, or -x")
-        sys.exit(1)
 except IndexError:
     print("[!] couldn't find .app folder and/or Info.plist file, invalid ipa/app specified")
     sys.exit(1)
@@ -216,14 +207,6 @@ if args.f:
     dylibs = {d for d in args.f if d.endswith(".dylib") and not any(com in d.lower() for com in common)}
     id_injected = {f for f in args.f if ".framework" in f and not any(com in f.lower() for com in common)}
     id_injected.update(dylibs)
-    (
-        substrate_injected,
-        rocketbootstrap_injected,
-        mryipc_injected,
-        cephei_injected,
-        cepheiui_injected,
-        cepheiprefs_injected
-    ) = [None] * 6
 
     # extracting all debs
     for deb in set(args.f):
@@ -263,6 +246,15 @@ if args.f:
         deb_counter += 1
 
     args.f = set(args.f)
+    needed = set()
+    deps_info = {
+        "substrate.": "CydiaSubstrate.framework/CydiaSubstrate",
+        "librocketbootstrap.": "librocketbootstrap.dylib",
+        "libmryipc.": "libmryipc.dylib",
+        "cephei.": "Cephei.framework/Cephei",
+        "cepheiui.": "CepheiUI.framework/CepheiUI",
+        "cepheiprefs.": "CepheiPrefs.framework/CepheiPrefs"
+    }
 
     # remove codesign + fix all dependencies
     for dylib in dylibs:
@@ -290,61 +282,24 @@ if args.f:
             dep_actual_path = os.path.join(APP_PATH, inject_path, os.path.basename(dep))
 
             # check + fix dependencies on substrate, librocketbootstrap, libmryipc,
-            # cephei, cepheiui, and cepheiprefs
-            # there is definitely a better way to do this.
-            for common_name, common_path in {
-                "substrate.": "CydiaSubstrate.framework/CydiaSubstrate",
-                "librocketbootstrap.": "librocketbootstrap.dylib",
-                "libmryipc.": "libmryipc.dylib",
-                "cephei.": "Cephei.framework/Cephei",
-                "cepheiui.": "CepheiUI.framework/CepheiUI",
-                "cepheiprefs.": "CepheiPrefs.framework/CepheiPrefs"
-            }.items():
+            # cephei, cepheiui, and cepheiprefs.
+            for common_name, common_path in deps_info.items():
                 if common_name in dep.lower():
                     run(f"install_name_tool -change {dep} {inject_path_exec}/{common_path} '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
-
-                    # im so sorry but im lazy
-                    if common_name == "substrate.":
-                        com_check = substrate_injected
-                    elif common_name == "librocketbootstrap.":
-                        com_check = rocketbootstrap_injected
-                    elif common_name == "libmryipc.":
-                        com_check = mryipc_injected
-                    elif common_name == "cephei.":
-                        com_check = cephei_injected
-                    elif common_name == "cepheiui.":
-                        com_check = cepheiui_injected
-                    else:
-                        com_check = cepheiprefs_injected
-
-                    if not com_check:
-                        real_dep_name = common_path.split("/")[0]
-                        if not os.path.exists(os.path.join(APP_PATH, inject_path, real_dep_name)):
-                            try:
-                                copytree(os.path.join(USER_DIR, real_dep_name), os.path.join(APP_PATH, inject_path, real_dep_name))
-                            except NotADirectoryError:
-                                copyfile(os.path.join(USER_DIR, real_dep_name), os.path.join(APP_PATH, inject_path, real_dep_name))
-                            print(f"[*] auto-injected {real_dep_name}")
-                        else:
-                            print(f"[*] existing {real_dep_name} found")
-
-                        # im tired.
-                        if common_name == "substrate.":
-                            substrate_injected = 1
-                        elif common_name == "librocketbootstrap.":
-                            rocketbootstrap_injected = 1
-                        elif common_name == "libmryipc.":
-                            mryipc_injected = 1
-                        elif common_name == "cephei.":
-                            cephei_injected = 1
-                        elif common_name == "cepheiui.":
-                            cepheiui_injected = 1
-                        else:
-                            cepheiprefs_injected = 1
-
+                    needed.add(common_name)
                     if dep != f"{inject_path_exec}/{common_path}":
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{common_path}")
 
+        for missing in needed:
+            real_dep_name = deps_info[missing].split("/")[0]
+            if not os.path.exists(os.path.join(APP_PATH, inject_path, real_dep_name)):
+                try:
+                    copytree(os.path.join(USER_DIR, real_dep_name), os.path.join(APP_PATH, inject_path, real_dep_name))
+                except NotADirectoryError:
+                    copyfile(os.path.join(USER_DIR, real_dep_name), os.path.join(APP_PATH, inject_path, real_dep_name))
+                print(f"[*] auto-injected {real_dep_name}")
+            else:
+                print(f"[*] existing {real_dep_name} found")
 
         for dep in deps:
             for known in id_injected:
@@ -362,9 +317,9 @@ if args.f:
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{bn}.framework/{bn}")
 
     # forgot about this earlier.. oops
-    if rocketbootstrap_injected and not substrate_injected:
-        print("[*] auto-injected CydiaSubstrate.framework")
-
+    # yeah yeah, i know this fails if -p is used and dependencies need both substrate and rocketbootstrap,
+    # but why would **anyone** be using -p in the first place? i dont see a reason to fix it.
+    if "librocketbootstrap." in missing and "substrate." not in missing:
         if args.p:
             run("install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate " +
             f"@executable_path/CydiaSubstrate.framework/CydiaSubstrate '{os.path.join(APP_PATH, inject_path)}/librocketbootstrap.dylib'",
@@ -376,6 +331,7 @@ if args.f:
             print("[*] existing CydiaSubstrate.framework found, replaced")
 
         copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
+        print("[*] auto-injected CydiaSubstrate.framework")
 
     for d in dylibs:
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
