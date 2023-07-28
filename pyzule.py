@@ -299,17 +299,6 @@ if args.f:
                     if dep != f"{inject_path_exec}/{common_path}":
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{common_path}")
 
-        for missing in needed:
-            real_dep_name = deps_info[missing].split("/")[0]
-            if not os.path.exists(os.path.join(APP_PATH, inject_path, real_dep_name)):
-                try:
-                    copytree(os.path.join(USER_DIR, real_dep_name), os.path.join(APP_PATH, inject_path, real_dep_name))
-                except NotADirectoryError:
-                    copyfile(os.path.join(USER_DIR, real_dep_name), os.path.join(APP_PATH, inject_path, real_dep_name))
-                print(f"[*] auto-injected {real_dep_name}")
-            else:
-                print(f"[*] existing {real_dep_name} found")
-
         for dep in deps:
             for known in id_injected:
                 if os.path.basename(known) in dep:
@@ -324,6 +313,17 @@ if args.f:
                     elif ".framework" in dep:
                         run(f"install_name_tool -change {dep} {inject_path_exec}/{bn}.framework/{bn} '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{bn}.framework/{bn}")
+
+    for missing in needed:
+        real_dep_name = deps_info[missing].split("/")[0]
+        if not os.path.exists(os.path.join(APP_PATH, inject_path, real_dep_name)):
+            try:
+                copytree(os.path.join(USER_DIR, real_dep_name), os.path.join(APP_PATH, inject_path, real_dep_name))
+            except NotADirectoryError:
+                copyfile(os.path.join(USER_DIR, real_dep_name), os.path.join(APP_PATH, inject_path, real_dep_name))
+            print(f"[*] auto-injected {real_dep_name}")
+        else:
+            print(f"[*] existing {real_dep_name} found")
 
     # forgot about this earlier.. oops
     # yeah yeah, i know this fails if -p is used and dependencies need both substrate and rocketbootstrap,
