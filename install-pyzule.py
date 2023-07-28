@@ -8,7 +8,7 @@ DEPS = {
     "CydiaSubstrate.framework": "https://cdn.discordapp.com/attachments/1118672500126138550/1123059377264414901/TS-CydiaSubstrate.zip",
     "Cephei.framework": "https://cdn.discordapp.com/attachments/1130557037361770526/1130557602951069816/Cephei.framework.zip",
     "CepheiUI.framework": "https://cdn.discordapp.com/attachments/1130557037361770526/1130557964185501778/CepheiUI.framework.zip",
-    "CepheiPrefs.framework":"https://cdn.discordapp.com/attachments/1130557037361770526/1130558249532407968/CepheiPrefs.framework.zip",
+    "CepheiPrefs.framework": "https://cdn.discordapp.com/attachments/1130557037361770526/1130558249532407968/CepheiPrefs.framework.zip",
     "librocketbootstrap.dylib": "https://cdn.discordapp.com/attachments/1105635370885992458/1125588473466851328/librocketbootstrap.dylib",
     "libmryipc.dylib": "https://cdn.discordapp.com/attachments/1105635370885992458/1120562207458070568/libmryipc.dylib"
 }
@@ -28,8 +28,6 @@ def download(dep, link, ftype="z"):
         with open(osp.join(DEP_DIR, dep), "wb") as f:
             f.write(dl)
 
-    del dl
-
 
 # `tuple()` avoids a RuntimeError: dictionary changed size during iteration
 for dep in tuple(DEPS.keys()):
@@ -48,5 +46,5 @@ with open((pz_path := osp.join(DEP_DIR, "pyzule.py")), "wb") as f:
     f.write(get("https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py").content)
 print("[?] if prompted, enter your sudo password to finish installation")
 
-run(["sudo", "-p", "[<] ", "mv", pz_path, "/usr/local/bin/pyzule"])
-run(["sudo", "-p", "[<] ", "chmod", "+x", "/usr/local/bin/pyzule"])
+run(["sudo", "-p", "[<] ", "mv", pz_path, "/usr/local/bin/pyzule"], check=True)
+run(["sudo", "-p", "[<] ", "chmod", "+x", "/usr/local/bin/pyzule"], check=True)

@@ -170,6 +170,15 @@ try:
         print("[*] copied app")
         APP_PATH = glob(os.path.join(EXTRACT_DIR, INPUT_BASENAME))[0]
     PLIST_PATH = glob(os.path.join(APP_PATH, "Info.plist"))[0]
+    BINARY = get_plist(PLIST_PATH, "CFBundleExecutable")
+    BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
+
+    # checking encryption status
+    crypt = str(run(f"otool -l {BINARY_PATH}", capture_output=True, check=True, shell=True)).split("\\n")
+    if any("cryptid 1" in line for line in crypt) and any((args.f, args.s, args.x)):
+        print("[!] app is encrypted, injecting, fakesigning, and using custom entitlements not available")
+        print("[!] run your pyzule command again without -f, -s, or -x")
+        sys.exit(1)
 except IndexError:
     print("[!] couldn't find .app folder and/or Info.plist file, invalid ipa/app specified")
     sys.exit(1)
@@ -319,7 +328,7 @@ if args.f:
     # forgot about this earlier.. oops
     # yeah yeah, i know this fails if -p is used and dependencies need both substrate and rocketbootstrap,
     # but why would **anyone** be using -p in the first place? i dont see a reason to fix it.
-    if "librocketbootstrap." in missing and "substrate." not in missing:
+    if "librocketbootstrap." in needed and "substrate." not in needed:
         if args.p:
             run("install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate " +
             f"@executable_path/CydiaSubstrate.framework/CydiaSubstrate '{os.path.join(APP_PATH, inject_path)}/librocketbootstrap.dylib'",
