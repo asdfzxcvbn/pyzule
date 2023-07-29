@@ -5,7 +5,7 @@ from zipfile import ZipFile
 from os import makedirs, remove
 DEP_DIR = osp.expanduser("~/.zxcvbn")
 DEPS = {
-    "CydiaSubstrate.framework": "https://cdn.discordapp.com/attachments/1118672500126138550/1123059377264414901/TS-CydiaSubstrate.zip",
+    "CydiaSubstrate.framework": "https://cdn.discordapp.com/attachments/1109632387052212367/1134918145740644473/CydiaSubstrateFix.zip",
     "Cephei.framework": "https://cdn.discordapp.com/attachments/1130557037361770526/1130557602951069816/Cephei.framework.zip",
     "CepheiUI.framework": "https://cdn.discordapp.com/attachments/1130557037361770526/1130557964185501778/CepheiUI.framework.zip",
     "CepheiPrefs.framework": "https://cdn.discordapp.com/attachments/1130557037361770526/1130558249532407968/CepheiPrefs.framework.zip",
