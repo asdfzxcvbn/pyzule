@@ -21,13 +21,14 @@ open an issue for any feature requests!
 - fakesign the output ipa/app
 - use custom entitlements for the app
 - inject into @executable_path instead of @rpath
+- use substitute instead of CydiaSubstrate (smaller size, open source)
 
 ## usage
 you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i input -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-k icon] [-x entitlements] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e] [-p]
+usage: pyzule [-h] -i input -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-k icon] [-x entitlements] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e] [-p] [-t]
 
 an azule "clone" written in python3.
 
@@ -50,6 +51,7 @@ options:
   -s                    fakesigns the ipa (for use with appsync)
   -e                    remove app extensions
   -p                    inject into @executable_path
+  -t                    use substitute instead of substrate
 ```
 
 ## installation
@@ -85,7 +87,7 @@ ALSO installed by default on macos. (who could've guessed?!)
 ### installation script
 required. will install pyzule itself.
 
-`curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.py | python3 || python`
+`curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.py | python3`
 
 > **isn't that unsafe?**
 > 

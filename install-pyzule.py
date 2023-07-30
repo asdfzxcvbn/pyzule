@@ -6,6 +6,7 @@ from os import makedirs, remove
 DEP_DIR = osp.expanduser("~/.zxcvbn")
 DEPS = {
     "CydiaSubstrate.framework": "https://cdn.discordapp.com/attachments/1109632387052212367/1134918145740644473/CydiaSubstrateFix.zip",
+    "Substitute.framework": "https://cdn.discordapp.com/attachments/1105232452529700985/1135084740941193326/Substitute-2.3.22.g3e9b535-framework.zip",
     "Cephei.framework": "https://cdn.discordapp.com/attachments/1130557037361770526/1130557602951069816/Cephei.framework.zip",
     "CepheiUI.framework": "https://cdn.discordapp.com/attachments/1130557037361770526/1130557964185501778/CepheiUI.framework.zip",
     "CepheiPrefs.framework": "https://cdn.discordapp.com/attachments/1130557037361770526/1130558249532407968/CepheiPrefs.framework.zip",

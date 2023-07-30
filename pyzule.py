@@ -59,6 +59,8 @@ parser.add_argument("-e", action="store_true",
                     help="remove app extensions")
 parser.add_argument("-p", action="store_true",
                     help="inject into @executable_path")
+parser.add_argument("-t", action="store_true",
+                    help="use substitute instead of substrate")
 args = parser.parse_args()
 
 # sanitize paths
@@ -72,6 +74,10 @@ elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
 elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k, args.x)):
     parser.error("at least one option to modify the ipa must be present")
+elif args.p and args.t:
+    # well, you know, you CAN, but i just dont wanna implement that.
+    # i would remove -p altogether but i already spent a considerable amount of time on it.
+    parser.error("sorry, you can't use substitute while injecting into @executable_path")
 elif not (args.o.endswith(".app") or args.o.endswith(".ipa")):
     print("[?] file extension not specified, creating ipa")
     args.o += ".ipa"
@@ -86,14 +92,6 @@ EXTRACT_DIR = f".pyzule-{time()}"
 REAL_EXTRACT_DIR = os.path.join(os.getcwd(), EXTRACT_DIR)
 
 if args.f:
-    if args.p:
-        inject_path = ""  # @executable_path
-        inject_path_exec = "@executable_path"
-        print("[*] will inject into @executable_path")
-    else:
-        inject_path = "Frameworks"  # @rpath
-        inject_path_exec = "@rpath"
-
     if (nonexistant := ", ".join(ne for ne in args.f if not os.path.exists(ne))):
         # yes, TOTALLY required.
         if len(nonexistant.split(", ")) == 1:
@@ -101,6 +99,17 @@ if args.f:
         else:
             print(f"[!] {nonexistant} do not exist")
         sys.exit(1)
+    
+    if args.p:
+        inject_path = ""
+        inject_path_exec = "@executable_path"
+        print("[*] will inject into @executable_path")
+    else:
+        inject_path = "Frameworks"
+        inject_path_exec = "@rpath"
+
+    if args.t:
+        print("[*] will use substitute instead of substrate")
 
 
 def get_plist(path, entry=None):
@@ -211,7 +220,8 @@ if args.f:
 
     common = (
         "libmryipc.dylib", "librocketboostrap.dylib", "cydiasubstrate.framework",
-        "cephei.framework", "cepheiui.framework", "cepheiprefs.framework"
+        "cephei.framework", "cepheiui.framework", "cepheiprefs.framework",
+        "substitute.framework"
     )
     dylibs = {d for d in args.f if d.endswith(".dylib") and not any(com in d.lower() for com in common)}
     id_injected = {f for f in args.f if ".framework" in f and not any(com in f.lower() for com in common)}
@@ -264,6 +274,9 @@ if args.f:
         "cepheiui.": "CepheiUI.framework/CepheiUI",
         "cepheiprefs.": "CepheiPrefs.framework/CepheiPrefs"
     }
+
+    if args.t:
+        deps_info["substrate."] = "Substitute.framework/Substitute"
 
     # remove codesign + fix all dependencies
     for dylib in dylibs:
@@ -334,13 +347,25 @@ if args.f:
             f"@executable_path/CydiaSubstrate.framework/CydiaSubstrate '{os.path.join(APP_PATH, inject_path)}/librocketbootstrap.dylib'",
             shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)  # is this how im supposed to do it?
             print("[*] fixed dependency in librocketbootstrap.dylib: @rpath/CydiaSubstrate.framework/CydiaSubstrate -> @executable_path/CydiaSubstrate.framework/CydiaSubstrate")
+            if os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
+                print("[*] existing CydiaSubstrate.framework found, replacing")
+                rmtree(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
 
-        if os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
-            rmtree(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
-            print("[*] existing CydiaSubstrate.framework found, replaced")
+            copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
+            print("[*] auto-injected CydiaSubstrate.framework")
+        elif args.t:
+            run("install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate " +
+            f"@rpath/Substitute.framework/Substitute '{os.path.join(APP_PATH, inject_path)}/librocketbootstrap.dylib'",
+            shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)  # repeating code? whaaat? nooo!!!
+            print("[*] fixed dependency in librocketbootstrap.dylib: @rpath/CydiaSubstrate.framework/CydiaSubstrate -> @rpath/Substitute.framework/Substitute")
 
-        copytree(os.path.join(USER_DIR, "CydiaSubstrate.framework"), os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
-        print("[*] auto-injected CydiaSubstrate.framework")
+            if os.path.exists(os.path.join(APP_PATH, inject_path, "Substitute.framework")):
+                print("[*] existing Substitute.framework found, replacing")
+                rmtree(os.path.join(APP_PATH, inject_path, "Substitute.framework"))
+
+            copytree(os.path.join(USER_DIR, "Substitute.framework"), os.path.join(APP_PATH, inject_path, "Substitute.framework"))
+            print("[*] auto-injected Substitute.framework")
+
 
     for d in dylibs:
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
@@ -475,9 +500,9 @@ if args.k:
     else:
         copyfile(args.k, IMG_PATH)
 
-    icon = f"pyzule_{int(time())}"
-    icon_60x60 = f"{icon}_60x60"
-    icon_76x76 = f"{icon}_76x76"
+    icon = f"pyzule_{int(time())}_"
+    icon_60x60 = f"{icon}60x60"
+    icon_76x76 = f"{icon}76x76"
     with Image.open(IMG_PATH) as img:
         img.resize((120, 120)).save(os.path.join(APP_PATH, f"{icon_60x60}@2x.png"), "PNG")
         img.resize((152, 152)).save(os.path.join(APP_PATH, f"{icon_76x76}@2x~ipad.png"), "PNG")
@@ -485,13 +510,13 @@ if args.k:
     plist["CFBundleIcons"] = {
         "CFBundlePrimaryIcon": {
             "CFBundleIconFiles": [icon_60x60],
-            "CFBundleIconName": icon_60x60[:-5]
+            "CFBundleIconName": icon
         }
     }
     plist["CFBundleIcons~ipad"] = {
         "CFBundlePrimaryIcon": {
             "CFBundleIconFiles": [icon_60x60, icon_76x76],
-            "CFBundleIconName": icon_60x60[:-5]
+            "CFBundleIconName": icon
         }
     }
 
