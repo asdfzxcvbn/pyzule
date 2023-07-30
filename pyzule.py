@@ -475,22 +475,27 @@ if args.k:
     else:
         copyfile(args.k, IMG_PATH)
 
-    if "CFBundleIcons" in plist:
-        del plist["CFBundleIcons"]
-    if "CFBundleIcons~ipad" in plist:
-        del plist["CFBundleIcons~ipad"]
-
-    icon = f"pyzule-{int(time())}"
+    icon = f"pyzule_{int(time())}"
+    icon_60x60 = f"{icon}_60x60"
+    icon_76x76 = f"{icon}_76x76"
     with Image.open(IMG_PATH) as img:
-        resized = img.resize((120, 120))
-        resized.save(os.path.join(APP_PATH, f"{icon}.png"), "PNG")
-        resized.save(os.path.join(APP_PATH, f"{icon}@2x.png"), "PNG")
-        resized.save(os.path.join(APP_PATH, f"{icon}@3x.png"), "PNG")
+        img.resize((120, 120)).save(os.path.join(APP_PATH, f"{icon_60x60}@2x.png"), "PNG")
+        img.resize((152, 152)).save(os.path.join(APP_PATH, f"{icon_76x76}@2x~ipad.png"), "PNG")
 
-    plist["CFBundleIconFiles"] = [f"{icon}.png", f"{icon}@2x.png", f"{icon}@3x.png"]
+    plist["CFBundleIcons"] = {
+        "CFBundlePrimaryIcon": {
+            "CFBundleIconFiles": [icon_60x60],
+            "CFBundleIconName": icon_60x60[:-5]
+        }
+    }
+    plist["CFBundleIcons~ipad"] = {
+        "CFBundlePrimaryIcon": {
+            "CFBundleIconFiles": [icon_60x60, icon_76x76],
+            "CFBundleIconName": icon_60x60[:-5]
+        }
+    }
 
     print("[*] updated app icon")
-    del resized
     changed = 1
 
 dump_plist(PLIST_PATH, plist)
