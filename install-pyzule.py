@@ -5,7 +5,7 @@ from zipfile import ZipFile
 from os import makedirs, remove
 DEP_DIR = osp.expanduser("~/.zxcvbn")
 DEPS = {
-    "CydiaSubstrate.framework": "https://cdn.discordapp.com/attachments/1109632387052212367/1134918145740644473/CydiaSubstrateFix.zip",
+    "CydiaSubstrate.framework": "https://cdn.discordapp.com/attachments/1105232452529700985/1135672920916623420/MiniSubstrate.zip",
     "Substitute.framework": "https://cdn.discordapp.com/attachments/1105232452529700985/1135084740941193326/Substitute-2.3.22.g3e9b535-framework.zip",
     "Cephei.framework": "https://cdn.discordapp.com/attachments/1130557037361770526/1130557602951069816/Cephei.framework.zip",
     "CepheiUI.framework": "https://cdn.discordapp.com/attachments/1130557037361770526/1130557964185501778/CepheiUI.framework.zip",
@@ -34,6 +34,11 @@ def download(dep, link, ftype="z"):
 for dep in tuple(DEPS.keys()):
     if osp.exists(osp.join(DEP_DIR, dep)):
         del DEPS[dep]
+
+# to get minified substrate
+if not osp.exists(osp.join(DEP_DIR, ".redownloaded_substrate_jul_31_2023")):
+    DEPS["CydiaSubstrate.framework"] = "https://cdn.discordapp.com/attachments/1105232452529700985/1135672920916623420/MiniSubstrate.zip"
+    open(osp.join(DEP_DIR, ".redownloaded_substrate_jul_31_2023"), "a").close()
 
 for dependency, link in DEPS.items():
     print(f"[*] downloading {dependency}..")
