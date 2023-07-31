@@ -21,7 +21,7 @@ open an issue for any feature requests!
 - fakesign the output ipa/app
 - use custom entitlements for the app
 - inject into @executable_path instead of @rpath
-- use substitute instead of CydiaSubstrate (smaller size, open source)
+- use substitute instead of CydiaSubstrate (open source)
 
 ## usage
 you can get usage info with `pyzule -h`.
