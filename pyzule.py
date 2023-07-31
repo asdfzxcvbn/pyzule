@@ -99,7 +99,7 @@ if args.f:
         else:
             print(f"[!] {nonexistant} do not exist")
         sys.exit(1)
-    
+
     if args.p:
         inject_path = ""
         inject_path_exec = "@executable_path"
@@ -365,7 +365,6 @@ if args.f:
 
             copytree(os.path.join(USER_DIR, "Substitute.framework"), os.path.join(APP_PATH, inject_path, "Substitute.framework"))
             print("[*] auto-injected Substitute.framework")
-
 
     for d in dylibs:
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
