@@ -1,4 +1,5 @@
 from requests import get
+from sys import executable
 from os import path as osp
 from subprocess import run
 from zipfile import ZipFile
@@ -47,9 +48,12 @@ for dependency, link in DEPS.items():
     else:
         download(dependency, link, "d")
 
-print("\n[*] installing pyzule..")
-with open((pz_path := osp.join(DEP_DIR, "pyzule.py")), "wb") as f:
-    f.write(get("https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py").content)
+print("[*] installing pyzule..")
+with open((pz_path := osp.join(DEP_DIR, "pyzule.py")), "w") as f:
+    content_req = get("https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py").text.split("\n")
+    content_req[0] = f"#!{executable}"
+    print("[*] fixed executable path!")
+    f.write("\n".join(content_req))
 print("[?] if prompted, enter your sudo password to finish installation")
 
 run(["sudo", "-p", "[<] ", "mv", pz_path, "/usr/local/bin/pyzule"], check=True)
