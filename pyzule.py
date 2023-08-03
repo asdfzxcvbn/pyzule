@@ -342,11 +342,12 @@ if args.f:
     # yeah yeah, i know this fails if -p is used and dependencies need both substrate and rocketbootstrap,
     # but why would **anyone** be using -p in the first place? i dont see a reason to fix it.
     if "librocketbootstrap." in needed and "substrate." not in needed:
-        if args.p:
-            run("install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate " +
-            f"@executable_path/CydiaSubstrate.framework/CydiaSubstrate '{os.path.join(APP_PATH, inject_path)}/librocketbootstrap.dylib'",
-            shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)  # is this how im supposed to do it?
-            print("[*] fixed dependency in librocketbootstrap.dylib: @rpath/CydiaSubstrate.framework/CydiaSubstrate -> @executable_path/CydiaSubstrate.framework/CydiaSubstrate")
+        if args.p or not args.t:
+            if args.p:
+                run("install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate " +
+                f"@executable_path/CydiaSubstrate.framework/CydiaSubstrate '{os.path.join(APP_PATH, inject_path)}/librocketbootstrap.dylib'",
+                shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)  # is this how im supposed to do it?
+                print("[*] fixed dependency in librocketbootstrap.dylib: @rpath/CydiaSubstrate.framework/CydiaSubstrate -> @executable_path/CydiaSubstrate.framework/CydiaSubstrate")
             if os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
                 print("[*] existing CydiaSubstrate.framework found, replacing")
                 rmtree(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework"))
