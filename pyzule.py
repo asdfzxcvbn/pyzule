@@ -8,9 +8,9 @@ from time import time
 from atexit import register
 from platform import system
 from plistlib import load, dump
-from subprocess import run, DEVNULL
 from zipfile import ZipFile, BadZipFile
 from shutil import rmtree, copyfile, copytree, move
+from subprocess import run, DEVNULL, CalledProcessError
 WORKING_DIR = os.getcwd()
 USER_DIR = os.path.expanduser("~/.zxcvbn")
 changed = 0
@@ -61,6 +61,8 @@ parser.add_argument("-p", action="store_true",
                     help="inject into @executable_path")
 parser.add_argument("-t", action="store_true",
                     help="use substitute instead of substrate")
+parser.add_argument("-z", action="store_true",
+                    help="use 7zip instead of zip")
 args = parser.parse_args()
 
 # sanitize paths
@@ -110,6 +112,14 @@ if args.f:
 
     if args.t:
         print("[*] will use substitute instead of substrate")
+    
+    if args.z:
+        try:
+            run("7z", check=True, stdout=DEVNULL)
+        except CalledProcessError:
+            print("[!] 7z is not installed")
+            sys.exit(1)
+        print("[*] will use 7zip")
 
 
 def get_plist(path, entry=None):
@@ -370,7 +380,7 @@ if args.f:
     for d in dylibs:
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
         bn = os.path.basename(d)
-        run(f"insert_dylib --inplace --no-strip-codesig --all-yes '{inject_path_exec}/{bn}' {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
+        run(f"insert_dylib --inplace --strip-codesig --all-yes '{inject_path_exec}/{bn}' {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
         if os.path.exists(os.path.join(APP_PATH, inject_path, bn)):
             print(f"[*] existing {bn} found, replaced")
             os.remove(os.path.join(APP_PATH, inject_path, bn))
@@ -389,7 +399,7 @@ if args.f:
                 except FileNotFoundError:
                     copytree(actual_path, os.path.join(APP_PATH, inject_path, bn))
                     framework_exec = get_plist(os.path.join(actual_path, "Info.plist"), "CFBundleExecutable")
-                run(f"insert_dylib --inplace --no-strip-codesig --all-yes {inject_path_exec}/{bn}/{framework_exec} {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
+                run(f"insert_dylib --inplace --strip-codesig --all-yes {inject_path_exec}/{bn}/{framework_exec} {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
                 print(f"[*] successfully injected {bn}")
             elif bn.endswith(".appex"):
                 copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
@@ -564,7 +574,11 @@ if OUTPUT_IS_IPA:
     if not INPUT_IS_IPA:
         os.makedirs("Payload")
         run(f"mv '{INPUT_BASENAME}' 'Payload/{INPUT_BASENAME}'", shell=True, check=True)
-    run(f"zip -{args.c} -r '{os.path.basename(args.o)}' Payload", shell=True, stdout=DEVNULL, check=True)
+    if args.z:
+        run(f"7z a '{os.path.basename(args.o)}' Payload", shell=True, check=True)
+        print()  # just need a new line!
+    else:
+        run(f"zip -{args.c} -r '{os.path.basename(args.o)}' Payload", shell=True, stdout=DEVNULL, check=True)
 else:
     print("[*] moving app to output..")
 
