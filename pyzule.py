@@ -113,13 +113,15 @@ if args.f:
     if args.t:
         print("[*] will use substitute instead of substrate")
     
-    if args.z:
-        try:
-            run("7z", check=True, stdout=DEVNULL)
-        except CalledProcessError:
-            print("[!] 7z is not installed")
-            sys.exit(1)
-        print("[*] will use 7zip")
+if not args.o.endswith(".app") and args.z:
+    if args.c != 3:
+        print("[!] compression level will be ignored when using 7z")
+    try:
+        run("7z", check=True, stdout=DEVNULL)
+    except CalledProcessError:
+        print("[!] 7z is not installed")
+        sys.exit(1)
+    print("[*] will use 7zip")
 
 
 def get_plist(path, entry=None):
@@ -149,6 +151,14 @@ def change_plist(success, error, plist, condition, *keys):
         print(f"[*] {success}")
         global changed  # skipcq: PYL-W0603
         changed = 1
+
+
+# from https://stackoverflow.com/a/40347279
+def fast_scandir(dirname):
+    subfolders = [f.path for f in os.scandir(dirname) if f.is_dir()]
+    for dirname in subfolders:
+        subfolders.extend(fast_scandir(dirname))
+    return subfolders
 
 
 def cleanup():
@@ -561,6 +571,13 @@ if args.x:
     run(f"ldid -S{os.path.normpath(args.x)} {BINARY_PATH}", shell=True, check=True)
     print("[*] signed binary with entitlements file")
     changed = 1
+
+# removing folders you shouldnt have
+unnecessary = set(fol for fol in fast_scandir(APP_PATH) if fol.endswith("_CodeSignature") or fol.endswith("SC_Info"))
+for whaat in unnecessary:
+    rmtree(whaat)
+if unnecessary:
+    print("[*] removed unnecessary directories")
 
 # checking if anything was actually changed
 if not changed:
