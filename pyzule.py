@@ -117,7 +117,7 @@ if not args.o.endswith(".app") and args.z:
     if args.c != 3:
         print("[!] compression level will be ignored when using 7z")
     try:
-        run("7z", check=True, stdout=DEVNULL)
+        run(["7z"], check=True, stdout=DEVNULL)
     except CalledProcessError:
         print("[!] 7z is not installed")
         sys.exit(1)
@@ -153,6 +153,24 @@ def change_plist(success, error, plist, condition, *keys):
         changed = 1
 
 
+def remove_dirs(app_path, removed, *names):
+    removed_apps = 0
+
+    for app in tuple(os.path.join(APP_PATH, ap) for ap in names):
+        try:
+            rmtree(app)
+            removed_apps = 1
+        except FileNotFoundError:
+            continue
+
+    if removed_apps:
+        print(f"[*] removed {removed}")
+        global changed  # skipcq: PYL-W0603
+        changed = 1
+    else:
+        print(f"[?] {removed} not present")
+
+
 # from https://stackoverflow.com/a/40347279
 def fast_scandir(dirname):
     subfolders = [f.path for f in os.scandir(dirname) if f.is_dir()]
@@ -186,7 +204,7 @@ if INPUT_IS_IPA:
     except BadZipFile:
         print("[!] not a zip/ipa file")
         sys.exit(1)
-    print("[*] extracted ipa successfully")
+    print("[*] extracted ipa")
 
 # checking ipa/app validity
 try:
@@ -214,12 +232,7 @@ except IndexError:
 
 # remove app extensions
 if args.e:
-    try:
-        rmtree(os.path.join(APP_PATH, "PlugIns"))
-        print("[*] removed app extensions")
-        changed = 1
-    except FileNotFoundError:
-        print("[?] no app extensions to remove")
+    remove_dirs(APP_PATH, "app extensions", "PlugIns", "Extensions")
 
 # injecting stuff
 if args.f:
@@ -281,7 +294,7 @@ if args.f:
                         id_injected.add(dirname)
                 if "preferenceloader" in dirname.lower():
                     print(f"[!] found dependency on PreferenceLoader in {deb}, ipa might not work jailed")
-        print(f"[*] extracted {bn} successfully")
+        print(f"[*] extracted {bn}")
         deb_counter += 1
 
     args.f = set(args.f)
@@ -395,7 +408,7 @@ if args.f:
             print(f"[*] existing {bn} found, replaced")
             os.remove(os.path.join(APP_PATH, inject_path, bn))
         else:
-            print(f"[*] successfully injected {bn}")
+            print(f"[*] injected {bn}")
         copyfile(actual_path, os.path.join(APP_PATH, inject_path, bn))
 
     for tweak in args.f:
@@ -410,10 +423,10 @@ if args.f:
                     copytree(actual_path, os.path.join(APP_PATH, inject_path, bn))
                     framework_exec = get_plist(os.path.join(actual_path, "Info.plist"), "CFBundleExecutable")
                 run(f"insert_dylib --inplace --strip-codesig --all-yes {inject_path_exec}/{bn}/{framework_exec} {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
-                print(f"[*] successfully injected {bn}")
+                print(f"[*] injected {bn}")
             elif bn.endswith(".appex"):
                 copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
-                print(f"[*] successfully copied {bn} to PlugIns")
+                print(f"[*] copied {bn} to PlugIns")
             elif (
                 tweak not in dylibs and not bn.endswith(".deb") and "cydiasubstrate" not in tweak.lower()
                 and not any(com in tweak for com in common)
@@ -428,7 +441,7 @@ if args.f:
                         copytree(actual_path, os.path.join(APP_PATH, bn))
                     else:
                         copyfile(actual_path, os.path.join(APP_PATH, bn))
-                print(f"[*] successfully copied {bn} to app root")
+                print(f"[*] copied {bn} to app root")
         except FileExistsError:
             continue
     changed = 1
@@ -446,21 +459,7 @@ if args.u:
 
 # removing watch app (if specified)
 if args.w:
-    WATCH_APPS = tuple(os.path.join(APP_PATH, watchapp) for watchapp in ("Watch", "WatchKit", "com.apple.WatchPlaceholder"))
-    removed_watch = 0
-
-    for watch in WATCH_APPS:
-        try:
-            rmtree(watch)
-            removed_watch = 1
-        except FileNotFoundError:
-            continue
-
-    if removed_watch:
-        print("[*] removed watch app")
-        changed = 1
-    else:
-        print("[?] watch app not present")
+    remove_dirs(APP_PATH, "watch app", "Watch", "WatchKit", "com.apple.WatchPlaceholder")
 
 # set minimum os version (if specified)
 if args.m:
@@ -587,7 +586,10 @@ if not changed:
 # zipping everything back into an ipa/app
 os.chdir(EXTRACT_DIR)
 if OUTPUT_IS_IPA:
-    print(f"[*] generating ipa using compression level {args.c}..")
+    if args.z:
+        print("[*] generating ipa using 7z..")
+    else:
+        print(f"[*] generating ipa using compression level {args.c}..")
     if not INPUT_IS_IPA:
         os.makedirs("Payload")
         run(f"mv '{INPUT_BASENAME}' 'Payload/{INPUT_BASENAME}'", shell=True, check=True)
