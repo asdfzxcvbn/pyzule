@@ -112,7 +112,7 @@ if args.f:
 
     if args.t:
         print("[*] will use substitute instead of substrate")
-    
+
 if not args.o.endswith(".app") and args.z:
     if args.c != 3:
         print("[!] compression level will be ignored when using 7z")
@@ -156,7 +156,7 @@ def change_plist(success, error, plist, condition, *keys):
 def remove_dirs(app_path, removed, *names):
     removed_apps = 0
 
-    for app in tuple(os.path.join(APP_PATH, ap) for ap in names):
+    for app in tuple(os.path.join(app_path, ap) for ap in names):
         try:
             rmtree(app)
             removed_apps = 1
@@ -174,6 +174,7 @@ def remove_dirs(app_path, removed, *names):
 # from https://stackoverflow.com/a/40347279
 def fast_scandir(dirname):
     subfolders = [f.path for f in os.scandir(dirname) if f.is_dir()]
+    # skipcq: PYL-R1704
     for dirname in subfolders:
         subfolders.extend(fast_scandir(dirname))
     return subfolders
@@ -572,7 +573,7 @@ if args.x:
     changed = 1
 
 # removing folders you shouldnt have
-unnecessary = set(fol for fol in fast_scandir(APP_PATH) if fol.endswith("_CodeSignature") or fol.endswith("SC_Info"))
+unnecessary = {fol for fol in fast_scandir(APP_PATH) if fol.endswith("_CodeSignature") or fol.endswith("SC_Info")}
 for whaat in unnecessary:
     rmtree(whaat)
 if unnecessary:
