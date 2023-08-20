@@ -237,7 +237,8 @@ if args.e:
 
 # injecting stuff
 if args.f:
-    run(f"ldid -e {BINARY_PATH} > {(ENT_PATH := os.path.join(APP_PATH, 'pyzule.xml'))}", shell=True, check=True)
+    ENT_PATH = f"'{os.path.join(APP_PATH, 'pyzule.xml')}'"
+    run(f"ldid -e {BINARY_PATH} > {ENT_PATH}", shell=True, check=True)
     run(f"ldid -S {BINARY_PATH}", shell=True, check=True)
     DYLIBS_PATH = os.path.join(REAL_EXTRACT_DIR, "pyzule-inject")
     os.makedirs(DYLIBS_PATH, exist_ok=True)  # we'll copy everything we modify (dylibs) here to not mess with the original files
@@ -447,7 +448,7 @@ if args.f:
         except FileExistsError:
             continue
 
-    run(["ldid", f"-S{ENT_PATH}", BINARY_PATH], check=True)
+    run(f"ldid -S{ENT_PATH} {BINARY_PATH}", shell=True, check=True)
     print("[*] restored app entitlements")
     changed = 1
 
