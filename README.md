@@ -1,5 +1,5 @@
 # pyzule
-an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. `pyzule` aims to be faster, have more features, have better support for manually modified dylibs, and overall have less issues than azule. windows is not currently supported, but it should *(hopefully)* work in wsl. officially supports linux and macos. tested on arch linux and macos mojave w/ intel cpu.
+an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. `pyzule` aims to be faster, have more features, have better support for manually modified dylibs, and overall have less issues than azule. officially supports linux, macos, and wsl. tested on arch linux and macos mojave w/ intel cpu.
 
 ## features
 ~~not many right now, but will probably add some in the future if i need them.~~
@@ -21,14 +21,15 @@ open an issue for any feature requests!
 - fakesign the output ipa/app
 - use custom entitlements for the app
 - inject into @executable_path instead of @rpath
-- use substitute instead of CydiaSubstrate (open source)
+- use substitute (open source) instead of CydiaSubstrate
+- compress using 7zip instead of `zip`
 
 ## usage
 you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i input -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-k icon] [-x entitlements] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e] [-p] [-t]
+usage: pyzule [-h] -i input -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-k icon] [-x entitlements] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e] [-p] [-t] [-z]
 
 an azule "clone" written in python3.
 
@@ -52,6 +53,7 @@ options:
   -e                    remove app extensions
   -p                    inject into @executable_path
   -t                    use substitute instead of substrate
+  -z                    use 7zip instead of zip
 ```
 
 ## installation
