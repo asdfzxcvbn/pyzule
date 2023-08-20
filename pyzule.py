@@ -238,8 +238,14 @@ if args.e:
 # injecting stuff
 if args.f:
     ENT_PATH = f"'{os.path.join(APP_PATH, 'pyzule.xml')}'"
-    run(f"ldid -e {BINARY_PATH} > {ENT_PATH}", shell=True, check=True)
-    run(f"ldid -S {BINARY_PATH}", shell=True, check=True)
+    try:
+        run(f"ldid -e {BINARY_PATH} > {ENT_PATH}", shell=True, check=True)
+    except CalledProcessError:
+        with open(ENT_PATH, "a") as epf:
+            pass
+        del epf  # i would've just used `open(ENT_PATH, "a").close()`, but i guess i'll go with this.
+    finally:
+        run(f"ldid -S {BINARY_PATH}", shell=True, check=True)
     DYLIBS_PATH = os.path.join(REAL_EXTRACT_DIR, "pyzule-inject")
     os.makedirs(DYLIBS_PATH, exist_ok=True)  # we'll copy everything we modify (dylibs) here to not mess with the original files
 
