@@ -621,7 +621,7 @@ if OUTPUT_IS_IPA:
     move(os.path.join(EXTRACT_DIR, os.path.basename(args.o)), args.o)
     print(f"[*] generated ipa at {args.o}")
 else:
-    run(f"mv '{APP_PATH}' '{os.path.join(EXTRACT_DIR, os.path.basename(args.o))}'", shell=True, check=True)
+    run(f"mv '{APP_PATH}' '{os.path.join(EXTRACT_DIR, os.path.basename(args.o))}'", shell=True, stderr=DEVNULL)  # skipcq: PYL-W1510
     if os.path.exists(args.o):
         rmtree(args.o)
     run(f"mv '{os.path.join(EXTRACT_DIR, os.path.basename(args.o))}' '{args.o}'", shell=True, check=True)
