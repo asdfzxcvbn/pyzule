@@ -237,7 +237,7 @@ if args.e:
 
 # injecting stuff
 if args.f:
-    ENT_PATH = f"'{os.path.join(APP_PATH, 'pyzule.xml')}'"
+    ENT_PATH = f"'{os.path.join(APP_PATH, 'pyzule.entitlements')}'"
     try:
         run(f"ldid -e {BINARY_PATH} > {ENT_PATH}", shell=True, check=True)
     except CalledProcessError:
@@ -579,7 +579,7 @@ if args.s:
 
 # sign app executable with entitlements provided
 if args.x:
-    run(f"ldid -S{os.path.normpath(args.x)} {BINARY_PATH}", shell=True, check=True)
+    run(f"ldid -S'{os.path.normpath(args.x)}' {BINARY_PATH}", shell=True, check=True)
     print("[*] signed binary with entitlements file")
     changed = 1
 
