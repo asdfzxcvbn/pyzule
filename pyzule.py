@@ -496,15 +496,14 @@ if args.v:
 # change app bundle id
 if args.b:
     orig_bundle = plist["CFBundleIdentifier"]
-    print(f"[*] original bundle id is {orig_bundle}")
     plist["CFBundleIdentifier"] = args.b
-    for ext in glob(os.path.join(APP_PATH, "PlugIns", "*.appex")):
-        ext_plist = os.path.join(ext, "Info.plist")
-        appex_plist = get_plist(ext_plist)
+    print(f"[*] changed bundle id: {orig_bundle} -> {args.b}")
+    for ext in (PLUGINS := glob(os.path.join(APP_PATH, "PlugIns", "*.appex"))):
+        appex_plist = get_plist((ext_plist := os.path.join(ext, "Info.plist")))
         appex_plist["CFBundleIdentifier"] = appex_plist["CFBundleIdentifier"].replace(orig_bundle, args.b)
         dump_plist(ext_plist, appex_plist)
-        print(f"[*] changed {os.path.basename(ext)} bundle id to {appex_plist['CFBundleIdentifier']}")
-    print(f"[*] changed app bundle id to {args.b}")
+    if PLUGINS:
+        print("[*] changed all other bundle ids")
     changed = 1
 
 # add url schemes to the app
@@ -557,8 +556,9 @@ if args.k:
 dump_plist(PLIST_PATH, plist)
 
 if args.s:
+    print("[*] fakesigning..")
     run(f"ldid -S -M {BINARY_PATH}", shell=True, check=True)
-    print(f"[*] fakesigned {BINARY}")
+    fs_counter = 1
 
     PATTERNS = (
         "*.dylib", "*.framework",
@@ -574,7 +574,8 @@ if args.s:
             run(f"ldid -S -M '{os.path.join(fs, FS_EXEC)}'", shell=True, check=True)
         else:
             run(f"ldid -S -M '{fs}'", shell=True, check=True)
-        print(f"[*] fakesigned {os.path.basename(fs)}")
+        fs_counter += 1
+    print(f"[*] fakesigned \033[1m{fs_counter}\033[0m items")
     changed = 1
 
 # sign app executable with entitlements provided
