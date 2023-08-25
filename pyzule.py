@@ -224,9 +224,8 @@ try:
     # checking encryption status
     crypt = str(run(f"otool -l {BINARY_PATH}", capture_output=True, check=True, shell=True)).split("\\n")
     if any("cryptid 1" in line for line in crypt) and any((args.f, args.s, args.x)):
-        print("[!] app is encrypted, injecting, fakesigning, and using custom entitlements not available")
-        print("[!] run your pyzule command again without -f, -s, or -x")
-        sys.exit(1)
+        print("[!] app is encrypted, the output app will only work for devices that have ever been logged in to your apple id")
+        print("[!] find a decrypted ipa for everything to function normally")
 except IndexError:
     print("[!] couldn't find .app folder and/or Info.plist file, invalid ipa/app specified")
     sys.exit(1)
