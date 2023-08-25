@@ -70,10 +70,10 @@ on macos, run `git clone https://github.com/tyilo/insert_dylib.git && cd insert_
 
 on linux, run `git clone https://github.com/LeanVel/insert_dylib.git && cd insert_dylib && sudo ./Install.sh && cd ../ && sudo rm -rf insert_dylib`
 
-if you're on macos, that should be everything you need to install. skip to the installation script.
+if you're on macos, make sure you have Xcode and the Xcode command line tools installed. install ldid from procursus, then skip to the installation script.
 
 #### install_name_tool
-installed by default on macos. tested on an amd64 linux machine, it probably won't work on anything else. i don't know where to get the binaries for other architectures.
+tested on an amd64 linux machine, it probably won't work on anything else. i don't know where to get the binaries for other architectures.
 
 `sudo wget https://cdn.discordapp.com/attachments/1105232452529700985/1117486649803292837/install_name_tool -O /usr/local/bin/install_name_tool && sudo chmod +x /usr/local/bin/install_name_tool`
 
@@ -82,11 +82,11 @@ installed by default on macos. tested on an amd64 linux machine, it probably won
 with the recent trollstore fix, using procursus's ldid build is now required. get it for your platform here: https://github.com/ProcursusTeam/ldid/releases, then move it to `/usr/local/bin/ldid`
 
 #### otool
-ALSO installed by default on macos. (who could've guessed?!)
 
 `sudo wget https://cdn.discordapp.com/attachments/1105232452529700985/1117486650533085275/otool -O /usr/local/bin/otool && sudo chmod +x /usr/local/bin/otool`
 
 ### installation script
+
 required. will install pyzule itself.
 
 `curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.py | python3`
