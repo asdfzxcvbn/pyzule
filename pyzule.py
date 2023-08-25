@@ -171,15 +171,6 @@ def remove_dirs(app_path, removed, *names):
         print(f"[?] {removed} not present")
 
 
-# from https://stackoverflow.com/a/40347279
-def fast_scandir(dirname):
-    subfolders = [f.path for f in os.scandir(dirname) if f.is_dir()]
-    # skipcq: PYL-R1704
-    for dirname in subfolders:
-        subfolders.extend(fast_scandir(dirname))
-    return subfolders
-
-
 def cleanup():
     print("[*] deleting temporary directory..")
     rmtree(REAL_EXTRACT_DIR)
@@ -581,13 +572,6 @@ if args.x:
     run(f"ldid -S'{os.path.normpath(args.x)}' {BINARY_PATH}", shell=True, check=True)
     print("[*] signed binary with entitlements file")
     changed = 1
-
-# removing folders you shouldnt have
-unnecessary = {fol for fol in fast_scandir(APP_PATH) if fol.endswith("_CodeSignature") or fol.endswith("SC_Info")}
-for whaat in unnecessary:
-    rmtree(whaat)
-if unnecessary:
-    print("[*] removed unnecessary directories")
 
 # checking if anything was actually changed
 if not changed:
