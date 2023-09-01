@@ -14,7 +14,7 @@ open an issue for any feature requests!
 - add custom url schemes
 - change app icon
 - enable documents support
-- set minimum iOS version to 10.0
+- customize MinimumOSVersion
 - remove UISupportedDevices
 - remove watch app
 - remove app extensions
@@ -29,7 +29,7 @@ you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i input -o output [-n name] [-v version] [-b bundle id] [-c [level]] [-k icon] [-x entitlements] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-m] [-d] [-s] [-e] [-p] [-t] [-z]
+usage: pyzule [-h] -i input -o output [-n name] [-v version] [-b bundle id] [-m minimum] [-c [level]] [-k icon] [-x entitlements] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-d] [-s] [-e] [-p] [-t] [-z]
 
 an azule "clone" written in python3.
 
@@ -40,6 +40,7 @@ options:
   -n name               modify the app's name
   -v version            modify the app's version
   -b bundle id          modify the app's bundle id
+  -m minimum            change MinimumOSVersion
   -c [level]            the compression level of the output ipa (default is 3)
   -k icon               an image file to use as the app icon
   -x entitlements       a file containing entitlements to sign the app with
@@ -47,7 +48,6 @@ options:
   -f files [files ...]  tweak files to inject into the ipa
   -u                    remove UISupportedDevices
   -w                    remove watch app
-  -m                    set MinimumOSVersion to iOS 10.0
   -d                    enable files access
   -s                    fakesigns the ipa (for use with appsync)
   -e                    remove app extensions
@@ -89,6 +89,7 @@ with the recent trollstore fix, using procursus's ldid build is now required. ge
 
 required. will install pyzule itself.
 
+`python3 -m pip install requests Pillow`
 `curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.py | python3`
 
 > **isn't that unsafe?**

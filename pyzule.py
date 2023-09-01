@@ -33,6 +33,8 @@ parser.add_argument("-v", metavar="version", type=str, required=False,
                     help="modify the app's version")
 parser.add_argument("-b", metavar="bundle id", type=str, required=False,
                     help="modify the app's bundle id")
+parser.add_argument("-m", metavar="minimum", type=float, required=False,
+                    help="change MinimumOSVersion")
 parser.add_argument("-c", metavar="level", type=int, default=3,
                     help="the compression level of the output ipa (default is 3)",
                     action="store", choices=range(1, 10),
@@ -49,8 +51,6 @@ parser.add_argument("-u", action="store_true",
                     help="remove UISupportedDevices")
 parser.add_argument("-w", action="store_true",
                     help="remove watch app")
-parser.add_argument("-m", action="store_true",
-                    help="set MinimumOSVersion to iOS 10.0")
 parser.add_argument("-d", action="store_true",
                     help="enable files access")
 parser.add_argument("-s", action="store_true",
@@ -464,8 +464,8 @@ if args.w:
 
 # set minimum os version (if specified)
 if args.m:
-    change_plist("set MinimumOSVersion to iOS 10.0", "MinimumOSVersion was already 10.0",
-                plist, "10.0", "MinimumOSVersion")
+    change_plist(f"set MinimumOSVersion to {args.m}", f"MinimumOSVersion was already {args.m}",
+                plist, str(args.m), "MinimumOSVersion")
 
 # enable documents support
 if args.d:
