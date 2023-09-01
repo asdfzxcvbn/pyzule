@@ -33,9 +33,9 @@ parser.add_argument("-v", metavar="version", type=str, required=False,
                     help="modify the app's version")
 parser.add_argument("-b", metavar="bundle id", type=str, required=False,
                     help="modify the app's bundle id")
-parser.add_argument("-m", metavar="minimum", type=float, required=False,
+parser.add_argument("-m", metavar="minimum", type=str, required=False,
                     help="change MinimumOSVersion")
-parser.add_argument("-c", metavar="level", type=int, default=3,
+parser.add_argument("-c", metavar="level", type=str, default=3,
                     help="the compression level of the output ipa (default is 3)",
                     action="store", choices=range(1, 10),
                     nargs="?", const=1)
@@ -80,7 +80,11 @@ elif args.p and args.t:
     # well, you know, you CAN, but i just dont wanna implement that.
     # i would remove -p altogether but i already spent a considerable amount of time on it.
     parser.error("sorry, you can't use substitute while injecting into @executable_path")
-elif not (args.o.endswith(".app") or args.o.endswith(".ipa")):
+elif args.m:
+    for char in args.m:
+        if char not in ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."):
+            parser.error(f"invalid OS version: {args.m}")
+if not (args.o.endswith(".app") or args.o.endswith(".ipa")):
     print("[?] file extension not specified, creating ipa")
     args.o += ".ipa"
 if os.path.exists(args.o):
@@ -465,7 +469,7 @@ if args.w:
 # set minimum os version (if specified)
 if args.m:
     change_plist(f"set MinimumOSVersion to {args.m}", f"MinimumOSVersion was already {args.m}",
-                plist, str(args.m), "MinimumOSVersion")
+                plist, args.m, "MinimumOSVersion")
 
 # enable documents support
 if args.d:
