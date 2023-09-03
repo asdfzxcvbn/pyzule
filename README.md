@@ -90,6 +90,7 @@ with the recent trollstore fix, using procursus's ldid build is now required. ge
 required. will install pyzule itself.
 
 `python3 -m pip install requests Pillow`
+
 `curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.py | python3`
 
 > **isn't that unsafe?**
