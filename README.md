@@ -7,7 +7,7 @@ an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. `pyzule`
 open an issue for any feature requests!
 
 - inject deb, dylib, framework, bundle, and appex files and automatically fix dependencies when possible
-- automatically fix dependencies on CydiaSubstrate, librocketbootstrap, libmryipc, and Cephei*
+- automatically fix dependencies on CydiaSubstrate, librocketbootstrap, libmryipc, libhdev, and Cephei*
 - copy any unknown file/folder types to app root
 - use a custom compression level
 - change app name, version, and bundle id
@@ -70,7 +70,7 @@ on macos, run `git clone https://github.com/tyilo/insert_dylib.git && cd insert_
 
 on linux, run `git clone https://github.com/LeanVel/insert_dylib.git && cd insert_dylib && sudo ./Install.sh && cd ../ && sudo rm -rf insert_dylib`
 
-if you're on macos, make sure you have Xcode and the Xcode command line tools installed. install ldid from procursus, then skip to the installation script.
+**if you're on macos, make sure you have Xcode and the Xcode command line tools installed. install ldid from procursus, then skip to the installation script.**
 
 #### install_name_tool
 tested on an amd64 linux machine, it probably won't work on anything else. i don't know where to get the binaries for other architectures.

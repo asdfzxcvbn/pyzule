@@ -175,12 +175,10 @@ def remove_dirs(app_path, removed, *names):
         print(f"[?] {removed} not present")
 
 
+@register
 def cleanup():
     print("[*] deleting temporary directory..")
     rmtree(REAL_EXTRACT_DIR)
-
-
-register(cleanup)
 
 
 # extracting ipa/copying app
@@ -256,7 +254,7 @@ if args.f:
     common = (
         "libmryipc.dylib", "librocketboostrap.dylib", "cydiasubstrate.framework",
         "cephei.framework", "cepheiui.framework", "cepheiprefs.framework",
-        "substitute.framework"
+        "substitute.framework", "libhdev.framework"
     )
     dylibs = {d for d in args.f if d.endswith(".dylib") and not any(com in d.lower() for com in common)}
     id_injected = {f for f in args.f if ".framework" in f and not any(com in f.lower() for com in common)}
@@ -307,7 +305,8 @@ if args.f:
         "libmryipc.": "libmryipc.dylib",
         "cephei.": "Cephei.framework/Cephei",
         "cepheiui.": "CepheiUI.framework/CepheiUI",
-        "cepheiprefs.": "CepheiPrefs.framework/CepheiPrefs"
+        "cepheiprefs.": "CepheiPrefs.framework/CepheiPrefs",
+        "libhdev.": "libhdev.framework/libhdev"
     }
 
     if args.t:
