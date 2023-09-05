@@ -58,44 +58,72 @@ options:
 
 ## installation
 
-### requirements
+<details>
+<summary><b>macOS instructions</b></summary>
+<br/>
+<ol>
+  <li>open Terminal. this is where you'll be running every command.</li>
+  <li>install <a href="https://apps.apple.com/us/app/xcode/id497799835">Xcode</a> from the app store (if not already installed)</li>
+  <li>Install the Xcode cli tools (if not already installed) by running:
+  <ul>
+    <li><code>xcode-select --install</code></li>
+    <li><code>sudo xcodebuild -license</code></li>
+  </ul>
+  </li>
+  <li>
+  install <code>insert_dylib</code>:
 
-#### cli tools
-you need `git`, `gcc`, `zip`, `unzip`, and `tar`. you also need `ar` if you're on linux.
+  <pre lang="bash"><code>git clone https://github.com/tyilo/insert_dylib.git && cd insert_dylib/insert_dylib && gcc main.c && chmod +x a.out && sudo mv a.out /usr/local/bin/insert_dylib && cd ../.. && sudo rm -r insert_dylib</code></pre>
+  </li>
+  <li>
+  run <code>uname -m</code>. if the output says <code>x86_64</code>, run the following:
+  
+  <pre lang="bash"><code>sudo curl https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64 --output /usr/local/bin/ldid && sudo chmod +x /usr/local/bin/ldid</code></pre>
 
-#### insert_dylib
-you have to build this yourself.
+  if it says something else, run:
 
-on macos, run `git clone https://github.com/tyilo/insert_dylib.git && cd insert_dylib/insert_dylib && gcc main.c && chmod +x a.out && sudo mv a.out /usr/local/bin/insert_dylib && cd ../.. && sudo rm -r insert_dylib`
+  <pre lang="bash"><code>sudo curl https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_arm64 --output /usr/local/bin/ldid && sudo chmod +x /usr/local/bin/ldid</code></pre>
+  </li>
+  <li>
+  install <code>pyzule</code>:
 
-on linux, run `git clone https://github.com/LeanVel/insert_dylib.git && cd insert_dylib && sudo ./Install.sh && cd ../ && sudo rm -rf insert_dylib`
+  <pre lang="bash"><code>python3 -m pip install -U requests Pillow && curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.py | python3</code></pre>
+  </li>
+</ol>
+</details>
 
-**if you're on macos, make sure you have Xcode and the Xcode command line tools installed. install ldid from procursus, then skip to the installation script.**
+<details>
+<summary><b>linux instructions (64-bit only)</b></summary>
+<br/>
+<ol>
+  <li>make sure you have <code>git</code>, <code>gcc</code>, <code>zip</code>, <code>unzip</code>, <code>tar</code> and <code>ar</code> installed.</li>
+  <li>
+  install <code>insert_dylib</code>:
 
-#### install_name_tool
-tested on an amd64 linux machine, it probably won't work on anything else. i don't know where to get the binaries for other architectures.
+  <pre lang="bash"><code>git clone https://github.com/LeanVel/insert_dylib.git && cd insert_dylib && sudo ./Install.sh && cd ../ && sudo rm -rf insert_dylib</code></pre>
+  </li>
+  <li>
+  install <code>ldid</code>:
 
-`sudo wget https://cdn.discordapp.com/attachments/1105232452529700985/1117486649803292837/install_name_tool -O /usr/local/bin/install_name_tool && sudo chmod +x /usr/local/bin/install_name_tool`
+  <pre lang="bash"><code>sudo curl https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_linux_x86_64 --output /usr/local/bin/ldid && sudo chmod +x /usr/local/bin/ldid</code></pre>
+  </li>
+  <li>
+  install <code>install_name_tool</code>:
 
-#### ldid
+  <pre lang="bash"><code>sudo curl https://cdn.discordapp.com/attachments/1105232452529700985/1117486649803292837/install_name_tool --output /usr/local/bin/install_name_tool && sudo chmod +x /usr/local/bin/install_name_tool</code></pre>
+  </li>
+  <li>
+  install <code>otool</code>:
 
-with the recent trollstore fix, using procursus's ldid build is now required. get it for your platform here: https://github.com/ProcursusTeam/ldid/releases, then move it to `/usr/local/bin/ldid`
+  <pre lang="bash"><code>sudo wget https://cdn.discordapp.com/attachments/1105232452529700985/1117486650533085275/otool --output /usr/local/bin/otool && sudo chmod +x /usr/local/bin/otool</code></pre>
+  </li>
+  <li>
+  install <code>pyzule</code>:
 
-#### otool
-
-`sudo wget https://cdn.discordapp.com/attachments/1105232452529700985/1117486650533085275/otool -O /usr/local/bin/otool && sudo chmod +x /usr/local/bin/otool`
-
-### installation script
-
-required. will install pyzule itself.
-
-`python3 -m pip install requests Pillow`
-
-`curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.py | python3`
-
-> **isn't that unsafe?**
-> 
-> pretty much. if you're that paranoid, then you should know how to do it manually.
+  <pre lang="bash"><code>python3 -m pip install -U requests Pillow && curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.py | python3</code></pre>
+  </li>
+</ol>
+</details>
 
 ## contributing
 
