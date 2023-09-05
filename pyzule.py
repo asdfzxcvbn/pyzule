@@ -228,13 +228,14 @@ if args.e:
 
 # injecting stuff
 if args.f:
-    ENT_PATH = f"'{os.path.join(APP_PATH, 'pyzule.entitlements')}'"
+    ENT_PATH = os.path.join(APP_PATH, 'pyzule.entitlements')
     try:
-        run(f"ldid -e {BINARY_PATH} > {ENT_PATH}", shell=True, check=True)
+        run(f"ldid -e {BINARY_PATH} > {ENT_PATH}", shell=True, check=True, stderr=DEVNULL)
+        HAS_ENTITLEMENTS = 1
     except CalledProcessError:
-        with open(ENT_PATH, "a") as epf:
-            pass
-        del epf  # i would've just used `open(ENT_PATH, "a").close()`, but i guess i'll go with this.
+        with open(ENT_PATH, "w") as epf:
+            HAS_ENTITLEMENTS = 0
+        del epf
     finally:
         run(f"ldid -S {BINARY_PATH}", shell=True, check=True)
     DYLIBS_PATH = os.path.join(REAL_EXTRACT_DIR, "pyzule-inject")
@@ -446,8 +447,9 @@ if args.f:
         except FileExistsError:
             continue
 
-    run(f"ldid -S{ENT_PATH} {BINARY_PATH}", shell=True, check=True)
-    print("[*] restored app entitlements")
+    if HAS_ENTITLEMENTS:
+        run(f"ldid -S'{ENT_PATH}' {BINARY_PATH}", shell=True, check=True)
+        print("[*] restored app entitlements")
     changed = 1
 
 plist = get_plist(PLIST_PATH)
