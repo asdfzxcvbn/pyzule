@@ -405,7 +405,7 @@ if args.f:
     for d in dylibs:
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
         bn = os.path.basename(d)
-        run(f"insert_dylib --inplace --strip-codesig --weak --all-yes '{inject_path_exec}/{bn}' {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
+        run(f"insert_dylib --inplace --no-strip-codesig --weak --all-yes '{inject_path_exec}/{bn}' {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
         if os.path.exists(os.path.join(APP_PATH, inject_path, bn)):
             print(f"[*] existing {bn} found, replaced")
             os.remove(os.path.join(APP_PATH, inject_path, bn))
@@ -424,7 +424,7 @@ if args.f:
                 except FileNotFoundError:
                     copytree(actual_path, os.path.join(APP_PATH, inject_path, bn))
                     framework_exec = get_plist(os.path.join(actual_path, "Info.plist"), "CFBundleExecutable")
-                run(f"insert_dylib --inplace --strip-codesig --weak --all-yes {inject_path_exec}/{bn}/{framework_exec} {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
+                run(f"insert_dylib --inplace --no-strip-codesig --weak --all-yes {inject_path_exec}/{bn}/{framework_exec} {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
                 print(f"[*] injected {bn}")
             elif bn.endswith(".appex"):
                 copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
