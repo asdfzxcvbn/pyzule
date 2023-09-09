@@ -557,6 +557,7 @@ if args.s:
     PATTERNS = (
         "*.dylib", "*.framework",
         os.path.join("PlugIns", "*.appex"),
+        os.path.join("Extensions", "*.appex"),
         os.path.join("Frameworks", "*.dylib"),
         os.path.join("Frameworks", "*.framework")
     )
