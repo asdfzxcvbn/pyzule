@@ -115,7 +115,7 @@ options:
   <li>
   install <code>otool</code>:
 
-  <pre lang="bash"><code>sudo wget https://cdn.discordapp.com/attachments/1105232452529700985/1117486650533085275/otool --output /usr/local/bin/otool && sudo chmod +x /usr/local/bin/otool</code></pre>
+  <pre lang="bash"><code>sudo curl https://cdn.discordapp.com/attachments/1105232452529700985/1117486650533085275/otool --output /usr/local/bin/otool && sudo chmod +x /usr/local/bin/otool</code></pre>
   </li>
   <li>
   install <code>pyzule</code>:
