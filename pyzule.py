@@ -35,7 +35,7 @@ parser.add_argument("-b", metavar="bundle id", type=str, required=False,
                     help="modify the app's bundle id")
 parser.add_argument("-m", metavar="minimum", type=str, required=False,
                     help="change MinimumOSVersion")
-parser.add_argument("-c", metavar="level", type=int, default=3,
+parser.add_argument("-c", metavar="level", type=int, default=6,
                     help="the compression level of the output ipa (default is 3)",
                     action="store", choices=range(1, 10),
                     nargs="?", const=1)
