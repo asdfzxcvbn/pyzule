@@ -41,7 +41,7 @@ options:
   -v version            modify the app's version
   -b bundle id          modify the app's bundle id
   -m minimum            change MinimumOSVersion
-  -c [level]            the compression level of the output ipa (default is 3)
+  -c [level]            the compression level of the output ipa (default is 6)
   -k icon               an image file to use as the app icon
   -x entitlements       a file containing entitlements to sign the app with
   -r url [url ...]      url schemes to add
