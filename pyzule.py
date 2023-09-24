@@ -118,12 +118,12 @@ if args.f:
         print("[*] will use substitute instead of substrate")
 
 if not args.o.endswith(".app") and args.z:
-    if args.c != 3:
+    if args.c != 6:
         print("[!] compression level will be ignored when using 7z")
     try:
-        run(["7z"], check=True, stdout=DEVNULL)
-    except CalledProcessError:
-        print("[!] 7z is not installed")
+        run(["7z"], check=True, stdout=DEVNULL, stderr=DEVNULL)
+    except (CalledProcessError, FileNotFoundError):
+        print("[!] 7z is not installed, either install it or don't use -z")
         sys.exit(1)
     print("[*] will use 7zip")
 
