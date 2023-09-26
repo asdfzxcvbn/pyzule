@@ -64,7 +64,7 @@ options:
 <ol>
   <li>open Terminal. this is where you'll be running every command.</li>
   <li>install <a href="https://apps.apple.com/us/app/xcode/id497799835">Xcode</a> from the app store (if not already installed)</li>
-  <li>Install the Xcode cli tools (if not already installed) by running:
+  <li>Install the Xcode cli tools (if not already installed <strong>or if <code>pyzule</code> suddenly stopped working</strong>) by running:
   <ul>
     <li><code>xcode-select --install</code></li>
     <li><code>sudo xcodebuild -license</code></li>
