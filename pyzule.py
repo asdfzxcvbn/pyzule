@@ -43,6 +43,8 @@ parser.add_argument("-k", metavar="icon", type=str, required=False,
                     help="an image file to use as the app icon")
 parser.add_argument("-x", metavar="entitlements", type=str, required=False,
                     help="a file containing entitlements to sign the app with")
+parser.add_argument("-l", metavar="plist", type=str, required=False,
+                    help="a plist to merge with the existing Info.plist")
 parser.add_argument("-r", metavar="url", type=str, required=False,
                     help="url schemes to add", nargs="+")
 parser.add_argument("-f", metavar="files", nargs="+", type=str,
@@ -69,7 +71,7 @@ args = parser.parse_args()
 args.i = os.path.normpath(args.i)
 args.o = os.path.normpath(args.o)
 
-# checking received args
+# checking received args for errors
 if not args.i.endswith(".ipa") and not args.i.endswith(".app"):
     parser.error("the input file must be an ipa/app")
 elif not os.path.exists(args.i):
@@ -84,6 +86,14 @@ elif args.m:
     for char in args.m:
         if char not in ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."):
             parser.error(f"invalid OS version: {args.m}")
+elif args.k and not os.path.isfile(args.k):
+    parser.error("the image file does not exist")
+elif args.x and not os.path.isfile(args.x):
+    parser.error("the entitlements file does not exist")
+elif args.l and not os.path.isfile(args.l):
+    parser.error("the plist to merge does not exist")
+
+# further checking (no errors, just confirmation)
 if not (args.o.endswith(".app") or args.o.endswith(".ipa")):
     print("[?] file extension not specified, creating ipa")
     args.o += ".ipa"
@@ -511,6 +521,17 @@ if args.r:
     })
     print("[*] added url schemes:", ", ".join(SCHEMES))
     changed = 1
+
+# "merge" plist content
+# if theres stuff like arrays, this will just replace them instead of actually merging them
+# why? because im lazy. and im 90% sure no one cares. if i (or someone else) needs it, i'll fix it
+if args.l:
+    args.l = os.path.normpath(args.l)
+    try:
+        with open(args.l, "rb") as m:
+            merge = load(m)
+    except FileNotFoundError:
+        pass  # will continue working tomorrow
 
 # change app icon - using esign's method (which i think guarantees that the icon IS changed)
 if args.k:
