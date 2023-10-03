@@ -525,7 +525,7 @@ if args.r:
 # if theres stuff like arrays, this will just replace them instead of actually merging them
 # why? because im lazy. and im 90% sure no one cares. if i (or someone else) needs it, i'll fix it
 if args.l:
-    args.l = os.path.normpath(args.l)
+    args.l = os.path.normpath(args.l)  # skipcq: FLK-E741
     try:
         with open(args.l, "rb") as m:
             merge = load(m)
@@ -539,7 +539,7 @@ if args.l:
         else:
             print("[*] merged plist, modified keys:", ", ".join(k for k in merge.keys() if k not in not_new))
             changed = 1
-    except Exception:  # let's just hope this catches any parsing errors.
+    except Exception:  # skipcq: PYL-W0703 -- let's just hope this catches any parsing errors.
         print("[!] couldn't parse plist")
 
 # change app icon - makes a new icon name, should hopefully
