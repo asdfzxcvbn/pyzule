@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/home/chris/Python-3.12.0/python
 import os
 import sys
 import argparse
@@ -16,8 +16,7 @@ USER_DIR = os.path.expanduser("~/.zxcvbn")
 changed = 0
 
 # check os compatibility
-system = system()
-if system == "Windows":
+if (system := system()) == "Windows":
     print("windows is not currently supported. install wsl and use pyzule there.")
     sys.exit(1)
 
@@ -76,7 +75,7 @@ if not args.i.endswith(".ipa") and not args.i.endswith(".app"):
     parser.error("the input file must be an ipa/app")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
-elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k, args.x)):
+elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k, args.x, args.l)):
     parser.error("at least one option to modify the ipa must be present")
 elif args.p and args.t:
     # well, you know, you CAN, but i just dont wanna implement that.
@@ -530,10 +529,21 @@ if args.l:
     try:
         with open(args.l, "rb") as m:
             merge = load(m)
-    except FileNotFoundError:
-        pass  # will continue working tomorrow
+        not_new = []
+        for k, v in merge.items():
+            if k in plist and plist[k] == v:
+                not_new.append(k)
+            plist[k] = v
+        if len(not_new) == len(merge):
+            print("[?] no modified plist entries")
+        else:
+            print("[*] merged plist, modified keys:", ", ".join(k for k in merge.keys() if k not in not_new))
+            changed = 1
+    except Exception:  # let's just hope this catches any parsing errors.
+        print("[!] couldn't parse plist")
 
-# change app icon - using esign's method (which i think guarantees that the icon IS changed)
+# change app icon - makes a new icon name, should hopefully
+# force it to use the new icon instead of the one in cache
 if args.k:
     args.k = os.path.normpath(args.k)
     IMG_PATH = os.path.join(EXTRACT_DIR, "pyzule_img.png")
@@ -596,9 +606,12 @@ if args.s:
 
 # sign app executable with entitlements provided
 if args.x:
-    run(f"ldid -S'{os.path.normpath(args.x)}' {BINARY_PATH}", shell=True, check=True)
-    print("[*] signed binary with entitlements file")
-    changed = 1
+    try:
+        run(f"ldid -S'{os.path.normpath(args.x)}' {BINARY_PATH}", shell=True, check=True)
+        print("[*] signed binary with entitlements file")
+        changed = 1
+    except CalledProcessError:
+        print("[!] couldn't sign binary with entitlements")
 
 # checking if anything was actually changed
 if not changed:
