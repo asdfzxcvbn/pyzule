@@ -1,4 +1,5 @@
 # pyzule
+### NEWS: python v3.12.0 has officially released, and pyzule is fully compatible!!
 an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. `pyzule` aims to be faster, have more features, have better support for manually modified dylibs, and overall have less issues than azule. officially supports linux, macos, and wsl. tested on arch linux and macos mojave w/ intel cpu.
 
 ## features
@@ -20,6 +21,7 @@ open an issue for any feature requests!
 - remove app extensions
 - fakesign the output ipa/app
 - use custom entitlements for the app
+- merge a plist into the app's existing Info.plist
 - inject into @executable_path instead of @rpath
 - use substitute (open source) instead of CydiaSubstrate
 - compress using 7zip instead of `zip`
@@ -29,7 +31,7 @@ you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i input -o output [-n name] [-v version] [-b bundle id] [-m minimum] [-c [level]] [-k icon] [-x entitlements] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-d] [-s] [-e] [-p] [-t] [-z]
+usage: pyzule [-h] -i input -o output [-n name] [-v version] [-b bundle id] [-m minimum] [-c [level]] [-k icon] [-x entitlements] [-l plist] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-d] [-s] [-e] [-p] [-t] [-z]
 
 an azule "clone" written in python3.
 
@@ -44,6 +46,7 @@ options:
   -c [level]            the compression level of the output ipa (default is 6)
   -k icon               an image file to use as the app icon
   -x entitlements       a file containing entitlements to sign the app with
+  -l plist              a plist to merge with the existing Info.plist
   -r url [url ...]      url schemes to add
   -f files [files ...]  tweak files to inject into the ipa
   -u                    remove UISupportedDevices
