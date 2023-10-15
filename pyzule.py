@@ -240,7 +240,10 @@ if args.f:
     ENT_PATH = os.path.join(APP_PATH, 'pyzule.entitlements')
     try:
         run(f"ldid -e {BINARY_PATH} > {ENT_PATH}", shell=True, check=True, stderr=DEVNULL)
-        HAS_ENTITLEMENTS = 1
+        if os.path.getsize(ENT_PATH) > 0:
+            HAS_ENTITLEMENTS = 1
+        else:
+            HAS_ENTITLEMENTS = 0
     except CalledProcessError:
         with open(ENT_PATH, "w") as epf:
             HAS_ENTITLEMENTS = 0
