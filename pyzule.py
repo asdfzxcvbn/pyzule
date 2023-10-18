@@ -286,8 +286,7 @@ if args.f:
         run(["tar", "-xf", data_tar, "-C", os.path.join(output, "e")], check=True)
         for dirpath, dirnames, filenames in os.walk(os.path.join(output, "e")):
             for filename in filenames:
-                filepath = os.path.join(dirpath, filename)
-                if filename.endswith(".dylib") and not any(com in filename.lower() for com in common) and not os.path.islink(filepath):
+                if filename.endswith(".dylib") and not any(com in filename.lower() for com in common) and not os.path.islink(os.path.join(dirpath, filename)):
                     src_path = os.path.join(dirpath, filename)
                     dest_path = os.path.join(DYLIBS_PATH, filename)
                     if not os.path.exists(dest_path):
