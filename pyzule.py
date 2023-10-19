@@ -227,7 +227,7 @@ try:
         BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
 
     # checking encryption status
-    if any("cryptid 1" in line for line in str(run(f"otool -l {BINARY_PATH}", capture_output=True, check=True, shell=True)).split("\\n")):
+    if any("cryptid 1" in line for line in str(run(f"otool -l '{BINARY_PATH}'", capture_output=True, check=True, shell=True)).split("\\n")):
         print("[?] app is encrypted, the output app will only work for devices that have ever been logged in to your apple id")
         print("[?] find a decrypted ipa for everything to function normally")
 except IndexError:
