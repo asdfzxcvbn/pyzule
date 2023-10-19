@@ -221,7 +221,10 @@ try:
         APP_PATH = glob(os.path.join(EXTRACT_DIR, INPUT_BASENAME))[0]
     PLIST_PATH = glob(os.path.join(APP_PATH, "Info.plist"))[0]
     BINARY = get_plist(PLIST_PATH, "CFBundleExecutable")
-    BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
+    if system == "Linux":
+        BINARY_PATH = os.path.join(APP_PATH, BINARY)
+    else:
+        BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
 
     # checking encryption status
     if any("cryptid 1" in line for line in str(run(f"otool -l {BINARY_PATH}", capture_output=True, check=True, shell=True)).split("\\n")):
