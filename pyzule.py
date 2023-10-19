@@ -417,7 +417,7 @@ if args.f:
     for d in dylibs:
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
         bn = os.path.basename(d)
-        run(f"insert_dylib --inplace --no-strip-codesig --weak --all-yes '{inject_path_exec}/{bn}' {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
+        run(f"insert_dylib --inplace --no-strip-codesig --weak --all-yes '{inject_path_exec}/{bn}' '{BINARY_PATH}'", shell=True, stdout=DEVNULL, check=True)
         if os.path.exists(os.path.join(APP_PATH, inject_path, bn)):
             print(f"[*] existing {bn} found, replaced")
             os.remove(os.path.join(APP_PATH, inject_path, bn))
