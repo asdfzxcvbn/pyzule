@@ -523,21 +523,18 @@ if args.r:
 
 # "merge" plist content
 # if theres stuff like arrays, this will just replace them instead of actually merging them
-# why? because im lazy. and im 90% sure no one cares. if i (or someone else) needs it, i'll fix it
+# why? because im lazy. and im 90% sure no one cares. if i need to, i'll fix it
 if args.l:
     args.l = os.path.normpath(args.l)  # skipcq: FLK-E741
     try:
         with open(args.l, "rb") as m:
             merge = load(m)
-        not_new = []
-        for k, v in merge.items():
-            if k in plist and plist[k] == v:
-                not_new.append(k)
-            plist[k] = v
-        if len(not_new) == len(merge):
+        if all(k in plist for k in merge) and all(v == plist[k] for k, v in merge.items()):
             print("[?] no modified plist entries")
         else:
-            print("[*] merged plist, modified keys:", ", ".join(k for k in merge.keys() if k not in not_new))
+            for k, v in merge.items():
+                plist[k] = v
+            print("[*] set plist keys:", ", ".join(merge))
             changed = 1
     except Exception:  # skipcq: PYL-W0703 -- let's just hope this catches any parsing errors.
         print("[!] couldn't parse plist")
