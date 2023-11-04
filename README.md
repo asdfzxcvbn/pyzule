@@ -1,5 +1,4 @@
 # pyzule
-### NEWS: python v3.12.0 has officially released, and pyzule is fully compatible!!
 an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. `pyzule` aims to be faster, have more features, have better support for manually modified dylibs, and overall have less issues than azule. officially supports linux, macos, and wsl. tested on arch linux and macos mojave w/ intel cpu.
 
 ## features
@@ -90,7 +89,7 @@ options:
   <li>
   install <code>pyzule</code>:
 
-  <pre lang="bash"><code>python3 -m pip install -U requests Pillow && curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.py | python3</code></pre>
+  <pre lang="bash"><code>bash -c "$(curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.sh)"</code></pre>
   </li>
 </ol>
 </details>
@@ -123,7 +122,7 @@ options:
   <li>
   install <code>pyzule</code>:
 
-  <pre lang="bash"><code>python3 -m pip install -U requests Pillow && curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.py | python3</code></pre>
+  <pre lang="bash"><code>bash -c "$(curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.sh)"</code></pre>
   </li>
 </ol>
 </details>

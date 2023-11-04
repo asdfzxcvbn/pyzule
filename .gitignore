@@ -1,4 +1,4 @@
-install-pyzule.sh
+# install-pyzule.sh
 experimental/
 testing.py
 .*.old
