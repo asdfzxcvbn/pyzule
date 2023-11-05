@@ -238,18 +238,17 @@ if args.e:
 # injecting stuff
 if args.f:
     ENT_PATH = os.path.join(APP_PATH, 'pyzule.entitlements')
+    with open(ENT_PATH, "w") as epf:
+        HAS_ENTITLEMENTS = 0
+
     try:
         run(f"ldid -e {BINARY_PATH} > {ENT_PATH}", shell=True, check=True, stderr=DEVNULL)
         HAS_ENTITLEMENTS = 1 if os.path.getsize(ENT_PATH) > 0 else 0
-    except CalledProcessError:
-        with open(ENT_PATH, "w") as epf:
-            HAS_ENTITLEMENTS = 0
-        del epf
     finally:
         run(f"ldid -S {BINARY_PATH}", shell=True, check=True)
+
     DYLIBS_PATH = os.path.join(REAL_EXTRACT_DIR, "pyzule-inject")
     os.makedirs(DYLIBS_PATH, exist_ok=True)  # we'll copy everything we modify (dylibs) here to not mess with the original files
-
     args.f = [os.path.normpath(np) for np in args.f]
 
     if any(i.endswith(".appex") for i in args.f):
