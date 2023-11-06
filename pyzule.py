@@ -330,7 +330,7 @@ if args.f:
         except FileNotFoundError:
             pass
         run(f"ldid -S -M '{actual_path}'", shell=True, check=True)
-        run(f"install_name_tool -id '{inject_path_exec}/{dylib_bn}' '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
+        run(f"install_name_tool -id '{inject_path_exec}/{dylib_bn}' '{actual_path}'", shell=True, stdout=DEVNULL, stderr=DEVNULL)
         deps_temp = run(f"otool -L '{actual_path}'", shell=True, capture_output=True, text=True, check=True).stdout.strip().split("\n")[2:]
         for ind, dep in enumerate(deps_temp):
             if "(architecture " in dep:
