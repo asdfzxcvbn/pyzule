@@ -31,13 +31,13 @@ $PYTHON -m pip install requests Pillow > /dev/null
 # create (or update) hidden dir
 if [ ! -d ~/.zxcvbn ] || [ $(ls -1 ~/.zxcvbn | wc -l) -ne 8 ]; then
     echo "[*] downloading dependencies.."
-    wget -qO /tmp/zxcvbn_dir.zip https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/zxcvbn_dir.zip > /dev/null
+    curl -so /tmp/zxcvbn_dir.zip https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/zxcvbn_dir.zip
     unzip -o /tmp/zxcvbn_dir.zip -d ~/.zxcvbn > /dev/null
 fi
 
 echo "[*] installing pyzule.."
 sudo rm /usr/local/bin/pyzule &> /dev/null  # yeah this is totally required leave me alone
-sudo wget -qO /usr/local/bin/pyzule https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py
+sudo curl -so /usr/local/bin/pyzule https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py
 sudo sed -i "1s/.*/#!\/usr\/bin\/env $PYTHON/" /usr/local/bin/pyzule
 echo "[*] fixed interpreter path!"
 sudo chmod +x /usr/local/bin/pyzule
