@@ -625,7 +625,7 @@ if OUTPUT_IS_IPA:
         os.makedirs("Payload")
         run(f"mv '{INPUT_BASENAME}' 'Payload/{INPUT_BASENAME}'", shell=True, check=True)
     if args.z:
-        run(f"7z a '{os.path.basename(args.o)}' Payload", shell=True, check=True)
+        run(f"7z a -tzip -mx=0 '{os.path.basename(args.o)}' Payload", shell=True, check=True)
         print()  # just need a new line!
     else:
         run(f"zip -{args.c} -r '{os.path.basename(args.o)}' Payload", shell=True, stdout=DEVNULL, check=True)
