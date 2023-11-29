@@ -42,7 +42,7 @@ options:
   -v version            modify the app's version
   -b bundle id          modify the app's bundle id
   -m minimum            change MinimumOSVersion
-  -c [level]            the compression level of the output ipa (default is 6)
+  -c [level]            the compression level of the output ipa (default is 6, 0-9)
   -k icon               an image file to use as the app icon
   -x entitlements       a file containing entitlements to sign the app with
   -l plist              a plist to merge with the existing Info.plist
