@@ -244,6 +244,8 @@ if args.f:
     try:
         run(f"ldid -e {BINARY_PATH} > {ENT_PATH}", shell=True, check=True, stderr=DEVNULL)
         HAS_ENTITLEMENTS = 1 if os.path.getsize(ENT_PATH) > 0 else 0
+    except Exception:
+        pass  # pretty sure this will work for now lol !
     finally:
         run(f"ldid -S {BINARY_PATH}", shell=True, check=True)
 
