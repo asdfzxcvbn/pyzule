@@ -81,10 +81,15 @@ options:
 </details>
 
 <details>
-<summary><b>linux instructions (64-bit only)</b></summary>
+<summary><b>linux/wsl instructions</b></summary>
 <br/>
 <ol>
-  <li>make sure you have <code>git</code>, <code>gcc</code>, <code>zip</code>, <code>unzip</code>, <code>tar</code> and <code>ar</code> installed.</li>
+  <li>
+    on debian-based systems (like ubuntu), run the following:
+    <pre lang="bash"><code>sudo apt update ; sudo apt install git zip unzip sudo binutils curl python3 python3-pip python3-venv</code></pre>
+    on arch based systems, use:
+    <pre lang="bash"><code>sudo pacman -Sy —needed git zip unzip binutils sudo curl python python-pip</code></pre>
+  </li>
   <li>
   install <code>pyzule</code>:
 

@@ -13,7 +13,7 @@ elif [ ! -x "$(command -v unzip)" ]; then
 else
     echo "[!] couldn't find \"python\" nor \"python3\" installed."
     if [ "$OS" == "Linux" ]; then
-        echo "[*] try \"sudo apt install python3 python3-pip\" or \"sudo pacman -S python python-pip\" depending on your distro."
+        echo "[*] try \"sudo apt install python3 python3-pip python3-venv\" or \"sudo pacman -S python python-pip\" depending on your distro."
     else
         echo "[*] for installation instructions, head over to python.org !"
     fi
@@ -32,8 +32,7 @@ mkdir -p ~/.zxcvbn
 if [ ! -d ~/.zxcvbn/venv ]; then
     $PYTHON -m venv ~/.zxcvbn/venv > /dev/null
 fi
-~/.zxcvbn/venv/bin/pip install -U requests Pillow &> /dev/null
-~/.zxcvbn/venv/bin/pip install --index-url https://lief.s3-website.fr-par.scw.cloud/latest lief &> /dev/null
+~/.zxcvbn/venv/bin/pip install -U requests Pillow lief &> /dev/null
 
 if [ ! -x "$(command -v ldid)" ]; then
     echo "[*] installing ldid.."
