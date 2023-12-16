@@ -32,7 +32,14 @@ mkdir -p ~/.zxcvbn
 if [ ! -d ~/.zxcvbn/venv ]; then
     $PYTHON -m venv ~/.zxcvbn/venv > /dev/null
 fi
-~/.zxcvbn/venv/bin/pip install -U requests Pillow lief &> /dev/null
+~/.zxcvbn/venv/bin/pip install -U Pillow &> /dev/null
+~/.zxcvbn/venv/bin/pip install -U lief &> /dev/null
+if [ $? -ne 0 ]; then
+    echo "[*] couldn't install lief. going to build from source, this may take a while.."
+    git clone --depth=1 https://github.com/lief-project/LIEF.git /tmp/LIEF
+    cd /tmp/LIEF/api/python
+    pip install -e .
+fi
 
 if [ ! -x "$(command -v ldid)" ]; then
     echo "[*] installing ldid.."

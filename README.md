@@ -86,9 +86,9 @@ options:
 <ol>
   <li>
     on debian-based systems (like ubuntu), run the following:
-    <pre lang="bash"><code>sudo apt update ; sudo apt install git zip unzip sudo binutils curl python3 python3-pip python3-venv</code></pre>
+    <pre lang="bash"><code>sudo apt update ; sudo apt install git zip unzip sudo binutils curl ninja-build cmake gcc python3 python3-pip python3-venv</code></pre>
     on arch based systems, use:
-    <pre lang="bash"><code>sudo pacman -Sy —needed git zip unzip binutils sudo curl python python-pip</code></pre>
+    <pre lang="bash"><code>sudo pacman -Sy —needed git zip unzip binutils sudo curl python python-pip ninja cmake gcc</code></pre>
   </li>
   <li>
   install <code>pyzule</code>:
