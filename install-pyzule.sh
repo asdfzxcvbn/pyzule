@@ -37,7 +37,7 @@ fi
 
 if [ ! -x "$(command -v ldid)" ]; then
     echo "[*] installing ldid.."
-    sudo curl -so /usr/local/bin/otool https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/deps/otool_${OS}_$ARCH
+    sudo curl -so /usr/local/bin/ldid https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/deps/ldid_${OS}_$ARCH
     sudo chmod +x /usr/local/bin/ldid
 fi
 
