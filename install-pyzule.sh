@@ -37,14 +37,7 @@ fi
 
 if [ ! -x "$(command -v ldid)" ]; then
     echo "[*] installing ldid.."
-
-    # im not even going to try to improve this, cry about it
-    if [ "$OS" == "Linux" ]; then
-        sudo curl -so /usr/local/bin/ldid https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_linux_$ARCH
-    else
-        sudo curl -so /usr/local/bin/ldid https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_$ARCH
-    fi
-
+    sudo curl -so /usr/local/bin/otool https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/deps/otool_${OS}_$ARCH
     sudo chmod +x /usr/local/bin/ldid
 fi
 
