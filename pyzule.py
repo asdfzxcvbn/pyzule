@@ -414,6 +414,7 @@ if args.f:
             copytree(os.path.join(USER_DIR, "Substitute.framework"), os.path.join(APP_PATH, inject_path, "Substitute.framework"))
             print("[*] auto-injected Substitute.framework")
 
+    lief.logging.disable()
     executable = lief.parse(BINARY_PATH)
 
     for d in dylibs:
