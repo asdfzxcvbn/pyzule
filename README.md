@@ -73,15 +73,6 @@ options:
   </ul>
   </li>
   <li>
-  run <code>uname -m</code>. if the output says <code>x86_64</code>, run the following:
-  
-  <pre lang="bash"><code>sudo curl https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64 --output /usr/local/bin/ldid && sudo chmod +x /usr/local/bin/ldid</code></pre>
-
-  if it says something else, run:
-
-  <pre lang="bash"><code>sudo curl https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_arm64 --output /usr/local/bin/ldid && sudo chmod +x /usr/local/bin/ldid</code></pre>
-  </li>
-  <li>
   install <code>pyzule</code>:
 
   <pre lang="bash"><code>bash -c "$(curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.sh)"</code></pre>
@@ -94,21 +85,6 @@ options:
 <br/>
 <ol>
   <li>make sure you have <code>git</code>, <code>gcc</code>, <code>zip</code>, <code>unzip</code>, <code>tar</code> and <code>ar</code> installed.</li>
-  <li>
-  install <code>ldid</code>:
-
-  <pre lang="bash"><code>sudo curl https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_linux_x86_64 --output /usr/local/bin/ldid && sudo chmod +x /usr/local/bin/ldid</code></pre>
-  </li>
-  <li>
-  install <code>install_name_tool</code>:
-
-  <pre lang="bash"><code>sudo curl https://cdn.discordapp.com/attachments/1105232452529700985/1117486649803292837/install_name_tool --output /usr/local/bin/install_name_tool && sudo chmod +x /usr/local/bin/install_name_tool</code></pre>
-  </li>
-  <li>
-  install <code>otool</code>:
-
-  <pre lang="bash"><code>sudo curl https://cdn.discordapp.com/attachments/1105232452529700985/1117486650533085275/otool --output /usr/local/bin/otool && sudo chmod +x /usr/local/bin/otool</code></pre>
-  </li>
   <li>
   install <code>pyzule</code>:
 

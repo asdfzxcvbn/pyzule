@@ -1,4 +1,6 @@
 #!/bin/bash
+OS=$(uname)
+ARCH=$(uname -m)
 
 # check if python is `python` or `python3`
 if [ -x "$(command -v python3)" ]; then
@@ -10,7 +12,7 @@ elif [ ! -x "$(command -v unzip)" ]; then
     exit 1
 else
     echo "[!] couldn't find \"python\" nor \"python3\" installed."
-    if [ "$(uname)" == "Linux" ]; then
+    if [ "$OS" == "Linux" ]; then
         echo "[*] try \"sudo apt install python3 python3-pip\" or \"sudo pacman -S python python-pip\" depending on your distro."
     else
         echo "[*] for installation instructions, head over to python.org !"
@@ -25,9 +27,35 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "[*] installing required libraries.."
+echo "[*] installing required pip libraries.."
 $PYTHON -m pip install requests Pillow > /dev/null
 $PYTHON -m pip install --index-url https://lief.s3-website.fr-par.scw.cloud/latest lief
+
+if [ ! -x "$(command -v ldid)" ]; then
+    echo "[*] installing ldid.."
+
+    # im not even going to try to improve this, cry about it
+    if [ "$OS" == "Linux" ]; then
+        sudo curl -so /usr/local/bin/ldid https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_linux_$ARCH
+    else
+        sudo curl -so /usr/local/bin/ldid https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_$ARCH
+    fi
+
+    sudo chmod +x /usr/local/bin/ldid
+fi
+
+# install_name_tool and otool should only be installed here on linux
+if [ ! -x "$(command -v otool)" ]; then
+    echo "[*] installing otool.."
+    sudo curl -so /usr/local/bin/otool https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/deps/otool_$ARCH
+    sudo chmod +x /usr/local/bin/otool
+fi
+
+if [ ! -x "$(command -v install_name_tool)" ]; then
+    echo "[*] installing install_name_tool.."
+    sudo curl -so /usr/local/bin/install_name_tool https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/deps/install_name_tool_$ARCH
+    sudo chmod +x /usr/local/bin/install_name_tool
+fi
 
 # create (or update) hidden dir
 if [ ! -d ~/.zxcvbn ] || [ $(ls -1 ~/.zxcvbn | wc -l) -ne 8 ]; then
