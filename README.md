@@ -73,11 +73,6 @@ options:
   </ul>
   </li>
   <li>
-  install <code>insert_dylib</code>:
-
-  <pre lang="bash"><code>git clone https://github.com/tyilo/insert_dylib.git && cd insert_dylib/insert_dylib && gcc main.c && chmod +x a.out && sudo mv a.out /usr/local/bin/insert_dylib && cd ../.. && sudo rm -r insert_dylib</code></pre>
-  </li>
-  <li>
   run <code>uname -m</code>. if the output says <code>x86_64</code>, run the following:
   
   <pre lang="bash"><code>sudo curl https://github.com/ProcursusTeam/ldid/releases/download/v2.1.5-procursus7/ldid_macosx_x86_64 --output /usr/local/bin/ldid && sudo chmod +x /usr/local/bin/ldid</code></pre>
@@ -99,11 +94,6 @@ options:
 <br/>
 <ol>
   <li>make sure you have <code>git</code>, <code>gcc</code>, <code>zip</code>, <code>unzip</code>, <code>tar</code> and <code>ar</code> installed.</li>
-  <li>
-  install <code>insert_dylib</code>:
-
-  <pre lang="bash"><code>git clone https://github.com/LeanVel/insert_dylib.git && cd insert_dylib && sudo ./Install.sh && cd ../ && sudo rm -rf insert_dylib</code></pre>
-  </li>
   <li>
   install <code>ldid</code>:
 
@@ -145,6 +135,9 @@ qr code:
 `pyzule` wouldn't be possible if it wasn't for the work of some marvelous people. HUGE thanks to:
 
 - [Al4ise](https://github.com/Al4ise) for [Azule](https://github.com/Al4ise/Azule)
-- [tyilo](https://github.com/tyilo) for [insert_dylib](https://github.com/tyilo/insert_dylib)
-- [LeanVel](https://github.com/LeanVel) for [insert_dylib](https://github.com/LeanVel/insert_dylib) for linux
+- [lief-project](https://github.com/lief-project) for [LIEF](https://github.com/lief-project/LIEF)
 - [binnichtaktiv](https://github.com/binnichtaktiv) for inspiring me to actually start this project
+
+formerly used:
+- [tyilo](https://github.com/tyilo)'s [insert_dylib](https://github.com/tyilo/insert_dylib)
+- [LeanVel](https://github.com/LeanVel)'s [insert_dylib](https://github.com/LeanVel/insert_dylib) for linux
