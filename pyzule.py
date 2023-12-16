@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
+import lief
 import argparse
 from PIL import Image
 from glob import glob
@@ -235,7 +236,8 @@ except IndexError:
 if args.e:
     remove_dirs(APP_PATH, "app extensions", "PlugIns", "Extensions")
 
-# injecting stuff
+# tbh i have no idea how this works. *why* does it work? i dont know!
+# it's a miracle my spaghetti code works, i'll probably rewrite this soon
 if args.f:
     ENT_PATH = os.path.join(APP_PATH, 'pyzule.entitlements')
     with open(ENT_PATH, "w") as epf:
@@ -412,10 +414,12 @@ if args.f:
             copytree(os.path.join(USER_DIR, "Substitute.framework"), os.path.join(APP_PATH, inject_path, "Substitute.framework"))
             print("[*] auto-injected Substitute.framework")
 
+    executable = lief.parse(BINARY_PATH)
+
     for d in dylibs:
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
         bn = os.path.basename(d)
-        run(f"insert_dylib --inplace --no-strip-codesig --weak --all-yes '{inject_path_exec}/{bn}' {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
+        executable.add(lief.MachO.DylibCommand.weak_lib(f"{inject_path_exec}/{bn}"))
         if os.path.exists(os.path.join(APP_PATH, inject_path, bn)):
             print(f"[*] existing {bn} found, replaced")
             os.remove(os.path.join(APP_PATH, inject_path, bn))
@@ -434,7 +438,7 @@ if args.f:
                 except FileNotFoundError:
                     copytree(actual_path, os.path.join(APP_PATH, inject_path, bn))
                     framework_exec = get_plist(os.path.join(actual_path, "Info.plist"), "CFBundleExecutable")
-                run(f"insert_dylib --inplace --no-strip-codesig --weak --all-yes {inject_path_exec}/{bn}/{framework_exec} {BINARY_PATH}", shell=True, stdout=DEVNULL, check=True)
+                executable.add(lief.MachO.DylibCommand.weak_lib(f"{inject_path_exec}/{bn}/{framework_exec}"))
                 print(f"[*] injected {bn}")
             elif bn.endswith(".appex"):
                 copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
@@ -457,6 +461,7 @@ if args.f:
         except FileExistsError:
             continue
 
+    executable.write(BINARY_PATH)
     if HAS_ENTITLEMENTS:
         run(f"ldid -S'{ENT_PATH}' {BINARY_PATH}", shell=True, check=True)
         print("[*] restored app entitlements")

@@ -27,6 +27,7 @@ fi
 
 echo "[*] installing required libraries.."
 $PYTHON -m pip install requests Pillow > /dev/null
+$PYTHON -m pip install --index-url https://lief.s3-website.fr-par.scw.cloud/latest lief
 
 # create (or update) hidden dir
 if [ ! -d ~/.zxcvbn ] || [ $(ls -1 ~/.zxcvbn | wc -l) -ne 8 ]; then
