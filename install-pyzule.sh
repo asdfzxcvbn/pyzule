@@ -28,8 +28,12 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "[*] installing required pip libraries.."
-$PYTHON -m pip install requests Pillow > /dev/null
-$PYTHON -m pip install --index-url https://lief.s3-website.fr-par.scw.cloud/latest lief
+mkdir -p ~/.zxcvbn
+if [ ! -d ~/.zxcvbn/venv ]; then
+    $PYTHON -m venv ~/.zxcvbn/venv > /dev/null
+fi
+~/.zxcvbn/venv/bin/pip install -U requests Pillow &> /dev/null
+~/.zxcvbn/venv/bin/pip install --index-url https://lief.s3-website.fr-par.scw.cloud/latest lief &> /dev/null
 
 if [ ! -x "$(command -v ldid)" ]; then
     echo "[*] installing ldid.."
@@ -67,7 +71,7 @@ fi
 echo "[*] installing pyzule.."
 sudo rm /usr/local/bin/pyzule &> /dev/null  # yeah this is totally required leave me alone
 sudo curl -so /usr/local/bin/pyzule https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py
-sudo sed -i "1s/.*/#!\/usr\/bin\/env $PYTHON/" /usr/local/bin/pyzule
+sudo sed -i "1s/.*/#!\\$HOME\/.zxcvbn\/venv\/bin\/python/" /usr/local/bin/pyzule
 echo "[*] fixed interpreter path!"
 sudo chmod +x /usr/local/bin/pyzule
 echo "[*] done!"
