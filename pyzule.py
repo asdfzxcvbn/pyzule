@@ -415,7 +415,8 @@ if args.f:
             print("[*] auto-injected Substitute.framework")
 
     lief.logging.disable()
-    executable = lief.parse(BINARY_PATH)
+    LIEF_BINARY_PATH = BINARY_PATH.replace("\\ ", " ")
+    executable = lief.parse(LIEF_BINARY_PATH)
 
     for d in dylibs:
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
@@ -462,7 +463,7 @@ if args.f:
         except FileExistsError:
             continue
 
-    executable.write(BINARY_PATH)
+    executable.write(LIEF_BINARY_PATH)
     if HAS_ENTITLEMENTS:
         run(f"ldid -S'{ENT_PATH}' {BINARY_PATH}", shell=True, check=True)
         print("[*] restored app entitlements")
