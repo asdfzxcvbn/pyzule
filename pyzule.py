@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
+# pyzule! pretty badly written.. but, it works! github.com/asdfzxcvbn/pyzule
 import os
 import sys
-import lief
 import argparse
-from PIL import Image
-from glob import glob
 from time import time
 from atexit import register
 from platform import system
+from glob import glob, iglob
 from plistlib import load, dump
-from zipfile import ZipFile, BadZipFile
 from shutil import rmtree, copyfile, copytree, move
+from zipfile import ZipFile, BadZipFile, ZIP_DEFLATED
 from subprocess import run, DEVNULL, CalledProcessError
+
+import lief
+from PIL import Image
+
 WORKING_DIR = os.getcwd()
 USER_DIR = os.path.expanduser("~/.zxcvbn")
 changed = 0
@@ -63,8 +66,6 @@ parser.add_argument("-p", action="store_true",
                     help="inject into @executable_path")
 parser.add_argument("-t", action="store_true",
                     help="use substitute instead of substrate")
-parser.add_argument("-z", action="store_true",
-                    help="use 7zip instead of zip")
 args = parser.parse_args()
 
 # sanitize paths
@@ -82,10 +83,8 @@ elif args.p and args.t:
     # well, you know, you CAN, but i just dont wanna implement that.
     # i would remove -p altogether but i already spent a considerable amount of time on it.
     parser.error("sorry, you can't use substitute while injecting into @executable_path")
-elif args.m:
-    for char in args.m:
-        if char not in ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."):
-            parser.error(f"invalid OS version: {args.m}")
+elif args.m and any(char not in "0123456789." for char in args.m):
+    parser.error(f"invalid OS version: {args.m}")
 elif args.k and not os.path.isfile(args.k):
     parser.error("the image file does not exist")
 elif args.x and not os.path.isfile(args.x):
@@ -126,16 +125,6 @@ if args.f:
 
     if args.t:
         print("[*] will use substitute instead of substrate")
-
-if not args.o.endswith(".app") and args.z:
-    # if args.c != 6:
-    #     print("[!] compression level will be ignored when using 7z")
-    try:
-        run(["7z"], check=True, stdout=DEVNULL, stderr=DEVNULL)
-    except (CalledProcessError, FileNotFoundError):
-        print("[!] 7z is not installed, either install it or don't use -z")
-        sys.exit(1)
-    print("[*] will use 7zip")
 
 
 def get_plist(path, entry=None):
@@ -239,7 +228,7 @@ if args.e:
 # tbh i have no idea how this works. *why* does it work? i dont know!
 # it's a miracle my spaghetti code works, i'll probably rewrite this soon
 if args.f:
-    ENT_PATH = os.path.join(APP_PATH, 'pyzule.entitlements')
+    ENT_PATH = os.path.join(APP_PATH, "pyzule.entitlements")
     with open(ENT_PATH, "w") as epf:
         HAS_ENTITLEMENTS = 0
 
@@ -626,18 +615,13 @@ if not changed:
 # zipping everything back into an ipa/app
 os.chdir(EXTRACT_DIR)
 if OUTPUT_IS_IPA:
-    if args.z:
-        print(f"[*] generating ipa with 7z using compression level {args.c}..")
-    else:
-        print(f"[*] generating ipa using compression level {args.c}..")
+    print(f"[*] generating ipa using compression level {args.c}..")
     if not INPUT_IS_IPA:
         os.makedirs("Payload")
         run(f"mv '{INPUT_BASENAME}' 'Payload/{INPUT_BASENAME}'", shell=True, check=True)
-    if args.z:
-        run(f"7z a -tzip -mx={args.c} '{os.path.basename(args.o)}' Payload", shell=True, check=True)
-        print()  # just need a new line!
-    else:
-        run(f"zip -{args.c} -r '{os.path.basename(args.o)}' Payload", shell=True, stdout=DEVNULL, check=True)
+    with ZipFile(os.path.basename(args.o), "w", ZIP_DEFLATED, compresslevel=args.c) as zf:
+        for f in iglob("Payload/**", recursive=True, include_hidden=True):
+            zf.write(f)
 else:
     print("[*] moving app to output..")
 

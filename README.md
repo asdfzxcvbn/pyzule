@@ -23,14 +23,13 @@ open an issue for any feature requests!
 - merge a plist into the app's existing Info.plist
 - inject into @executable_path instead of @rpath
 - use substitute (open source) instead of CydiaSubstrate
-- compress using 7zip instead of `zip`
 
 ## usage
 you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i input -o output [-n name] [-v version] [-b bundle id] [-m minimum] [-c [level]] [-k icon] [-x entitlements] [-l plist] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-d] [-s] [-e] [-p] [-t] [-z]
+usage: pyzule.py [-h] -i input -o output [-n name] [-v version] [-b bundle id] [-m minimum] [-c [level]] [-k icon] [-x entitlements] [-l plist] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-d] [-s] [-e] [-p] [-t]
 
 an azule "clone" written in python3.
 
@@ -55,7 +54,6 @@ options:
   -e                    remove app extensions
   -p                    inject into @executable_path
   -t                    use substitute instead of substrate
-  -z                    use 7zip instead of zip
 ```
 
 ## installation
@@ -86,9 +84,9 @@ options:
 <ol>
   <li>
     on debian-based systems (like ubuntu), run the following:
-    <pre lang="bash"><code>sudo apt update ; sudo apt install git zip unzip sudo binutils curl ninja-build cmake gcc python3 python3-pip python3-venv</code></pre>
+    <pre lang="bash"><code>sudo apt update ; sudo apt install git unzip sudo binutils curl ninja-build cmake gcc python3 python3-pip python3-venv</code></pre>
     on arch based systems, use:
-    <pre lang="bash"><code>sudo pacman -Sy —needed git zip unzip binutils sudo curl python python-pip ninja cmake gcc</code></pre>
+    <pre lang="bash"><code>sudo pacman -Sy —needed git unzip binutils sudo curl python python-pip ninja cmake gcc</code></pre>
   </li>
   <li>
   install <code>pyzule</code>:
