@@ -620,7 +620,7 @@ if OUTPUT_IS_IPA:
         os.makedirs("Payload")
         run(f"mv '{INPUT_BASENAME}' 'Payload/{INPUT_BASENAME}'", shell=True, check=True)
     with ZipFile(os.path.basename(args.o), "w", ZIP_DEFLATED, compresslevel=args.c) as zf:
-        for f in iglob("Payload/**", recursive=True, include_hidden=True):
+        for f in iglob("Payload/**", recursive=True):
             zf.write(f)
 else:
     print("[*] moving app to output..")
