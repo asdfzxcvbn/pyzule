@@ -1,9 +1,12 @@
 #!/bin/bash
 OS=$(uname)
 ARCH=$(uname -m)
+PZ_DIR=${HOME}/.config/pyzule
 
-# check if python is `python` or `python3`
-if [ -x "$(command -v python3)" ]; then
+# check which python we should use
+if [ -x "$(command -v python3.12)" ]; then
+    PYTHON=python3.12
+elif [ -x "$(command -v python3)" ]; then
     PYTHON=python3
 elif [ -x "$(command -v python)" ]; then
     PYTHON=python
@@ -20,25 +23,11 @@ else
     exit 1
 fi
 
-# check for pip
-$PYTHON -m pip &> /dev/null
-if [ $? -ne 0 ]; then
-    echo "[!] pip check failed! are you sure you have pip installed?"
-    exit 1
-fi
-
-echo "[*] installing required pip libraries.."
-mkdir -p ~/.zxcvbn
-if [ ! -d ~/.zxcvbn/venv ]; then
-    $PYTHON -m venv ~/.zxcvbn/venv > /dev/null
-fi
-~/.zxcvbn/venv/bin/pip install -U Pillow &> /dev/null
-~/.zxcvbn/venv/bin/pip install -U lief &> /dev/null
-if [ $? -ne 0 ]; then
-    echo "[*] couldn't install lief. going to build from source, this may take a while.."
-    git clone --depth=1 https://github.com/lief-project/LIEF.git /tmp/LIEF
-    cd /tmp/LIEF/api/python
-    pip install -e .
+mkdir -p ${PZ_DIR}
+if [ ! -d ${PZ_DIR}/venv ]; then
+    echo "[*] installing required pip libraries.."
+    $PYTHON -m venv ${PZ_DIR}/venv > /dev/null
+    ${PZ_DIR}/venv/bin/pip install -U Pillow lief &> /dev/null
 fi
 
 if [ ! -x "$(command -v ldid)" ]; then
@@ -61,16 +50,17 @@ if [ ! -x "$(command -v install_name_tool)" ]; then
 fi
 
 # create (or update) hidden dir
-if [ ! -d ~/.zxcvbn ] || [ $(ls -1 ~/.zxcvbn | wc -l) -ne 8 ]; then
+if [ ! -d ${PZ_DIR}/CydiaSubstrate.framework ]; then
     echo "[*] downloading dependencies.."
     curl -so /tmp/zxcvbn_dir.zip https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/zxcvbn_dir.zip
-    unzip -o /tmp/zxcvbn_dir.zip -d ~/.zxcvbn > /dev/null
+    unzip -o /tmp/zxcvbn_dir.zip -d ${PZ_DIR} > /dev/null
+    rm /tmp/zxcvbn_dir.zip
 fi
 
 echo "[*] installing pyzule.."
 sudo rm /usr/local/bin/pyzule &> /dev/null  # yeah this is totally required leave me alone
 sudo curl -so /usr/local/bin/pyzule https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py
-sudo sed -i "1s|.*|#\!$HOME/.zxcvbn/venv/bin/python|" /usr/local/bin/pyzule
+sudo sed -i "1s|.*|#\!${PZ_DIR}/venv/bin/python|" /usr/local/bin/pyzule
 echo "[*] fixed interpreter path!"
 sudo chmod +x /usr/local/bin/pyzule
 echo "[*] done!"

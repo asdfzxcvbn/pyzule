@@ -3,3 +3,4 @@ experimental/
 testing.py
 .*.old
 pyzule
+.idea
