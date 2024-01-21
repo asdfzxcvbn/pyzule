@@ -60,7 +60,11 @@ fi
 echo "[*] installing pyzule.."
 sudo rm /usr/local/bin/pyzule &> /dev/null  # yeah this is totally required leave me alone
 sudo curl -so /usr/local/bin/pyzule https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py
-sudo sed -i "1s|.*|#\!${PZ_DIR}/venv/bin/python|" /usr/local/bin/pyzule
+if [ "$OS" == "Linux" ]; then
+    sudo sed -i "1s|.*|#\!${PZ_DIR}/venv/bin/python|" /usr/local/bin/pyzule
+else
+    sudo sed -e "1s|.*|#\!${PZ_DIR}/venv/bin/python|" -i "" /usr/local/bin/pyzule  # bsd sed is broken asf
+fi
 echo "[*] fixed interpreter path!"
 sudo chmod +x /usr/local/bin/pyzule
 echo "[*] done!"
