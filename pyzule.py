@@ -16,7 +16,7 @@ import lief
 from PIL import Image
 
 WORKING_DIR = os.getcwd()
-USER_DIR = os.path.expanduser("~/.zxcvbn")
+USER_DIR = os.path.expanduser("~/.config/pyzule")
 changed = 0
 
 # check os compatibility
