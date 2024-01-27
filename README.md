@@ -86,7 +86,7 @@ options:
     on debian-based systems (like ubuntu), run the following:
     <pre lang="bash"><code>sudo apt update ; sudo apt install unzip curl python3 python3-venv</code></pre>
     on arch based systems, use:
-    <pre lang="bash"><code>sudo pacman -Sy unzip curl python</code></pre>
+    <pre lang="bash"><code>sudo pacman -Syu unzip curl python</code></pre>
   </li>
   <li>
   install <code>pyzule</code>:
