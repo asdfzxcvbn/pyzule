@@ -6,6 +6,7 @@ an [azule](https://github.com/Al4ise/Azule) "clone" written in python3. `pyzule`
 
 open an issue for any feature requests!
 
+- **generate and use [shareable `.pyzule` files](https://github.com/asdfzxcvbn/pyzule-gen) to configure IPAs!**
 - inject deb, dylib, framework, bundle, and appex files and automatically fix dependencies when possible
 - automatically fix dependencies on CydiaSubstrate, librocketbootstrap, libmryipc, libhdev, and Cephei*
 - copy any unknown file/folder types to app root
@@ -29,7 +30,7 @@ you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i input -o output [-n name] [-v version] [-b bundle id] [-m minimum] [-c [level]] [-k icon] [-x entitlements] [-l plist] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-d] [-s] [-e] [-p] [-t]
+usage: pyzule [-h] -i input -o output [-z .pyzule] [-n name] [-v version] [-b bundle id] [-m minimum] [-c [level]] [-k icon] [-x entitlements] [-l plist] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-d] [-s] [-e] [-p] [-t]
 
 an azule "clone" written in python3.
 
@@ -37,6 +38,7 @@ options:
   -h, --help            show this help message and exit
   -i input              the .ipa/.app to patch
   -o output             the name of the patched .ipa/.app that will be created
+  -z .pyzule            the .pyzule file to get info from
   -n name               modify the app's name
   -v version            modify the app's version
   -b bundle id          modify the app's bundle id
