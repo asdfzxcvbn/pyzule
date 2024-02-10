@@ -112,6 +112,7 @@ EXTRACT_DIR = f".pyzule-{time()}"
 os.makedirs((REAL_EXTRACT_DIR := os.path.join(os.getcwd(), EXTRACT_DIR)))
 
 # i never thought i would write code this bad. im tired.
+# oh yeah btw this barely works for shit LMFAO
 if args.z:
     changing = vars(args)
     with ZipFile(args.z) as zf:
@@ -124,8 +125,7 @@ if args.z:
             DYL_NAMES = [name for name in zf.namelist() if name.startswith("inject/")]
             zf.extractall(DOT_PATH, DYL_NAMES)
             changing["f"] = changing["f"] if changing["f"] else []
-            for name in DYL_NAMES:
-                changing["f"].append(f"{DOT_PATH}{name}")
+            changing["f"] += [entry.path for entry in os.scandir(f"{DOT_PATH}/inject")]
             del config["f"]
         if "k" in config:
             zf.extract("icon.png", DOT_OTHER_PATH)
