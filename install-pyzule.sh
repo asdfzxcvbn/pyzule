@@ -27,7 +27,11 @@ mkdir -p ${PZ_DIR}
 if [ ! -d ${PZ_DIR}/venv ]; then
     echo "[*] installing required pip libraries.."
     $PYTHON -m venv ${PZ_DIR}/venv > /dev/null
-    ${PZ_DIR}/venv/bin/pip install -U Pillow lief &> /dev/null
+    ${PZ_DIR}/venv/bin/pip install -U Pillow lief orjson &> /dev/null
+elif [ ! -f ${PZ_DIR}/orjson_upd ]; then
+    touch ${PZ_DIR}/orjson_upd
+    echo "[*] installing new dependencies.."
+    ${PZ_DIR}/venv/bin/pip install -U orjson &> /dev/null
 fi
 
 if [ ! -x "$(command -v ldid)" ]; then

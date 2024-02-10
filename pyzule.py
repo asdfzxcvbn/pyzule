@@ -13,6 +13,7 @@ from zipfile import ZipFile, BadZipFile, ZIP_DEFLATED
 from subprocess import run, DEVNULL, CalledProcessError
 
 import lief
+import orjson
 from PIL import Image
 
 WORKING_DIR = os.getcwd()
@@ -30,6 +31,8 @@ parser.add_argument("-i", metavar="input", type=str, required=True,
                     help="the .ipa/.app to patch")
 parser.add_argument("-o", metavar="output", type=str, required=True,
                     help="the name of the patched .ipa/.app that will be created")
+parser.add_argument("-z", metavar=".pyzule", type=str, required=False,
+                    help="the .pyzule file to get info from")
 parser.add_argument("-n", metavar="name", type=str, required=False,
                     help="modify the app's name")
 parser.add_argument("-v", metavar="version", type=str, required=False,
@@ -77,7 +80,7 @@ if not args.i.endswith(".ipa") and not args.i.endswith(".app"):
     parser.error("the input file must be an ipa/app")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
-elif not any((args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k, args.x, args.l)):
+elif not any((args.z, args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k, args.x, args.l)):
     parser.error("at least one option to modify the ipa must be present")
 elif args.p and args.t:
     # well, you know, you CAN, but i just dont wanna implement that.
@@ -85,6 +88,8 @@ elif args.p and args.t:
     parser.error("sorry, you can't use substitute while injecting into @executable_path")
 elif args.m and any(char not in "0123456789." for char in args.m):
     parser.error(f"invalid OS version: {args.m}")
+elif args.z and not os.path.isfile(args.z):
+    parser.error("the .pyzule file does not exist")
 elif args.k and not os.path.isfile(args.k):
     parser.error("the image file does not exist")
 elif args.x and not os.path.isfile(args.x):
@@ -104,15 +109,47 @@ if os.path.exists(args.o):
         print("[>] quitting.")
         sys.exit()
 EXTRACT_DIR = f".pyzule-{time()}"
-REAL_EXTRACT_DIR = os.path.join(os.getcwd(), EXTRACT_DIR)
+os.makedirs((REAL_EXTRACT_DIR := os.path.join(os.getcwd(), EXTRACT_DIR)))
+
+# i never thought i would write code this bad. im tired.
+if args.z:
+    changing = vars(args)
+    with ZipFile(args.z) as zf:
+        with zf.open("config.json") as conf:
+            config = orjson.loads(conf.read())
+        DOT_PATH = os.path.join(REAL_EXTRACT_DIR, "dot/")
+        DOT_OTHER_PATH = os.path.join(REAL_EXTRACT_DIR, "dotother/")
+
+        if "f" in config:
+            DYL_NAMES = [name for name in zf.namelist() if name.startswith("inject/")]
+            zf.extractall(DOT_PATH, DYL_NAMES)
+            changing["f"] = changing["f"] if changing["f"] else []
+            for name in DYL_NAMES:
+                changing["f"].append(f"{DOT_PATH}{name}")
+            del config["f"]
+        if "k" in config:
+            zf.extract("icon.png", DOT_OTHER_PATH)
+            changing["k"] = f"{DOT_OTHER_PATH}icon.png"
+            del config["k"]
+        if "x" in config:
+            zf.extract("new.entitlements", DOT_OTHER_PATH)
+            changing["x"] = f"{DOT_OTHER_PATH}new.entitlements"
+            del config["x"]
+        if "l" in config:
+            zf.extract("merge.plist", DOT_OTHER_PATH)
+            changing["l"] = f"{DOT_OTHER_PATH}merge.plist"
+            del config["l"]
+
+    for k, v in config.items():
+        changing[k] = v
 
 if args.f:
-    if (nonexistant := ", ".join(ne for ne in args.f if not os.path.exists(ne))):
+    if (nonexistent := ", ".join(ne for ne in args.f if not os.path.exists(ne))):
         # yes, TOTALLY required.
-        if len(nonexistant.split(", ")) == 1:
-            print(f"[!] {nonexistant} does not exist")
+        if len(nonexistent.split(", ")) == 1:
+            print(f"[!] {nonexistent} does not exist")
         else:
-            print(f"[!] {nonexistant} do not exist")
+            print(f"[!] {nonexistent} do not exist")
         sys.exit(1)
 
     if args.p:
@@ -186,7 +223,6 @@ OUTPUT_IS_IPA = 1 if args.o.endswith(".ipa") else 0
 if INPUT_IS_IPA:
     print("[*] extracting ipa..")
     try:
-        os.makedirs(EXTRACT_DIR)
         with ZipFile(args.i, "r") as ipa:
             if not any(name.startswith("Payload/") for name in ipa.namelist()):
                 raise KeyError
