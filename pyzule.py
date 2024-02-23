@@ -266,13 +266,16 @@ if args.e:
 
 # removed encrypted plugins
 if args.g:
-    APPEXES = {
-        "p": [f"PlugIns/{d}" for d in os.listdir(f"{APP_PATH}/PlugIns") if d.endswith(".appex")],
-        "e": [f"Extensions/{d}" for d in os.listdir(f"{APP_PATH}/Extensions") if d.endswith(".appex")]
-    }
+    # lol guess who forgot to test their stupid fucking feature
+    appexes = {"p": [], "e": []}
     removed = []
 
-    for plugin in APPEXES["p"] + APPEXES["e"]:
+    if os.path.isdir(f"{APP_PATH}/PlugIns"):
+        appexes["p"] = [f"PlugIns/{d}" for d in os.listdir(f"{APP_PATH}/PlugIns") if d.endswith(".appex")]
+    if os.path.isdir(f"{APP_PATH}/Extensions"):
+        appexes["e"] = [f"Extensions/{d}" for d in os.listdir(f"{APP_PATH}/Extensions") if d.endswith(".appex")]
+
+    for plugin in appexes["p"] + appexes["e"]:
         plugin_exec = get_plist(f"{APP_PATH}/{plugin}/Info.plist", "CFBundleExecutable")
 
         if b"cryptid 1" in run(f"otool -l '{APP_PATH}/{plugin}/{plugin_exec}'", shell=True, check=True, capture_output=True).stdout:
