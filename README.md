@@ -18,7 +18,7 @@ open an issue for any feature requests!
 - customize MinimumOSVersion
 - remove UISupportedDevices
 - remove watch app
-- remove app extensions
+- remove all app extensions (or only encrypted ones)
 - fakesign the output ipa/app
 - use custom entitlements for the app
 - merge a plist into the app's existing Info.plist
@@ -30,7 +30,7 @@ you can get usage info with `pyzule -h`.
 
 ```
 $ pyzule -h
-usage: pyzule [-h] -i input -o output [-z .pyzule] [-n name] [-v version] [-b bundle id] [-m minimum] [-c [level]] [-k icon] [-x entitlements] [-l plist] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-d] [-s] [-e] [-p] [-t]
+usage: pyzule [-h] -i input -o output [-z .pyzule] [-n name] [-v version] [-b bundle id] [-m minimum] [-c [level]] [-k icon] [-x entitlements] [-l plist] [-r url [url ...]] [-f files [files ...]] [-u] [-w] [-d] [-s] [-e] [-g] [-p] [-t]
 
 an azule "clone" written in python3.
 
@@ -54,6 +54,7 @@ options:
   -d                    enable files access
   -s                    fakesigns the ipa (for use with appsync)
   -e                    remove app extensions
+  -g                    remove encrypted extensions
   -p                    inject into @executable_path
   -t                    use substitute instead of substrate
 ```
