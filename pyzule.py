@@ -312,7 +312,7 @@ if args.f:
     if any(i.endswith(known) for i in args.f for known in (".deb", ".dylib", ".framework")):
         if inject_path:
             os.makedirs(os.path.join(APP_PATH, "Frameworks"), exist_ok=True)
-            run(f"install_name_tool -add_rpath @executable_path/Frameworks {BINARY_PATH}", shell=True, stdout=DEVNULL, stderr=DEVNULL)   # skipcq: PYL-W1510
+            run(f"install_name_tool -add_rpath @executable_path/Frameworks {BINARY_PATH}", shell=True, stdout=DEVNULL, stderr=DEVNULL)  # skipcq: PYL-W1510
         deb_counter = 0
 
     common = (
@@ -385,7 +385,7 @@ if args.f:
         except FileNotFoundError:
             pass
         run(f"ldid -S -M '{actual_path}'", shell=True, check=True)
-        run(f"install_name_tool -id '{inject_path_exec}/{dylib_bn}' '{actual_path}'", shell=True, stdout=DEVNULL, stderr=DEVNULL)
+        run(f"install_name_tool -id '{inject_path_exec}/{dylib_bn}' '{actual_path}'", shell=True, stdout=DEVNULL, stderr=DEVNULL)  # skipcq: PYL-W1510
         deps_temp = run(f"otool -L '{actual_path}'", shell=True, capture_output=True, text=True, check=True).stdout.strip().split("\n")[2:]
         for ind, dep in enumerate(deps_temp):
             if "(architecture " in dep:
