@@ -65,6 +65,8 @@ parser.add_argument("-s", action="store_true",
                     help="fakesigns the ipa (for use with appsync)")
 parser.add_argument("-e", action="store_true",
                     help="remove app extensions")
+parser.add_argument("-g", action="store_true",
+                    help="remove encrypted extensions")  # HELP I LITERALLY DONT KNOW WHAT TO NAME THE FLAGS ANYMORE
 parser.add_argument("-p", action="store_true",
                     help="inject into @executable_path")
 parser.add_argument("-t", action="store_true",
@@ -80,7 +82,7 @@ if not args.i.endswith(".ipa") and not args.i.endswith(".app"):
     parser.error("the input file must be an ipa/app")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
-elif not any((args.z, args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k, args.x, args.l)):
+elif not any((args.z, args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k, args.x, args.l, args.g)):
     parser.error("at least one option to modify the ipa must be present")
 elif args.p and args.t:
     # well, you know, you CAN, but i just dont wanna implement that.
@@ -250,7 +252,7 @@ try:
     BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
 
     # checking encryption status
-    if any("cryptid 1" in line for line in str(run(f"otool -l {BINARY_PATH}", capture_output=True, check=True, shell=True)).split("\\n")):
+    if b"cryptid 1" in run(f"otool -l {BINARY_PATH}", capture_output=True, check=True, shell=True).stdout:
         print("[?] app is encrypted, the output app will only work for devices that have ever been logged in to your apple id")
         print("[?] find a decrypted ipa for everything to function normally")
 except IndexError:
@@ -260,9 +262,33 @@ except IndexError:
 # remove app extensions
 if args.e:
     remove_dirs(APP_PATH, "app extensions", "PlugIns", "Extensions")
+    args.g = False
+
+# removed encrypted plugins
+if args.g:
+    APPEXES = {
+        "p": [f"PlugIns/{d}" for d in os.listdir(f"{APP_PATH}/PlugIns") if d.endswith(".appex")],
+        "e": [f"Extensions/{d}" for d in os.listdir(f"{APP_PATH}/Extensions") if d.endswith(".appex")]
+    }
+    removed = []
+
+    for plugin in APPEXES["p"] + APPEXES["e"]:
+        plugin_exec = get_plist(f"{APP_PATH}/{plugin}/Info.plist", "CFBundleExecutable")
+
+        if b"cryptid 1" in run(f"otool -l '{APP_PATH}/{plugin}/{plugin_exec}'", shell=True, check=True, capture_output=True).stdout:
+            rmtree(f"{APP_PATH}/{plugin}")
+            removed.append(plugin_exec)
+
+    if removed:
+        # GUYS PLEASE UPDATE TO PYTHON 3.12 I REALLY REALLY WANNA USE THE QUOTES INSIDE THE F-STR :(
+        print("[*] removed encrypted plugins:", ", ".join(removed))
+        changed = 1
+    else:
+        print("[?] no encrypted plugins")
 
 # tbh i have no idea how this works. *why* does it work? i dont know!
 # it's a miracle my spaghetti code works, i'll probably rewrite this soon
+# -- ME WHEN I LIE. IF IT WORKS WHY REWRITE IT??? AHAHA PYZULE V2.0 COMING NEVERRRRRR HAAAAAAAAAAAAAAAAAAAHAHA
 if args.f:
     ENT_PATH = os.path.join(APP_PATH, "pyzule.entitlements")
     with open(ENT_PATH, "w") as epf:
