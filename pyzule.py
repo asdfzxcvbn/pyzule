@@ -15,6 +15,7 @@ from subprocess import run, DEVNULL, CalledProcessError
 import lief
 import orjson
 from PIL import Image
+from requests import get
 
 WORKING_DIR = os.getcwd()
 USER_DIR = os.path.expanduser("~/.config/pyzule")
@@ -27,9 +28,9 @@ if (system := system()) == "Windows":
 
 # set/get all args
 parser = argparse.ArgumentParser(description="an azule \"clone\" written in python3.")
-parser.add_argument("-i", metavar="input", type=str, required=True,
+parser.add_argument("-i", metavar="input", type=str, required=False,
                     help="the .ipa/.app to patch")
-parser.add_argument("-o", metavar="output", type=str, required=True,
+parser.add_argument("-o", metavar="output", type=str, required=False,
                     help="the name of the patched .ipa/.app that will be created")
 parser.add_argument("-z", metavar=".pyzule", type=str, required=False,
                     help="the .pyzule file to get info from")
@@ -71,11 +72,35 @@ parser.add_argument("-p", action="store_true",
                     help="inject into @executable_path")
 parser.add_argument("-t", action="store_true",
                     help="use substitute instead of substrate")
+parser.add_argument("--update", action="store_true",
+                    help="check for updates")
 args = parser.parse_args()
 
+if args.update:
+    print("[*] checking for updates..")
+    with open(f"{USER_DIR}/version.json", "rb") as f:
+        info = orjson.loads(f.read())
+
+    new = orjson.loads(get(
+        "https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/version.json")
+    .content)
+
+    # guys please please please update to python 3.12 :pray:
+    if new["internal"] > info["internal"]:
+        print("[*] an update is available!")
+        print(f"[*] update: {info['version']} -> {new['version']}")
+        print(f"[*] link: https://github.com/asdfzxcvbn/pyzule/releases/tag/{new['version']}")
+        exit(0)
+    else:
+        print("[?] no update detected")
+        exit(1)
+
 # sanitize paths
-args.i = os.path.normpath(args.i)
-args.o = os.path.normpath(args.o)
+try:
+    args.i = os.path.normpath(args.i)
+    args.o = os.path.normpath(args.o)
+except TypeError:
+    parser.error("the following arguments are required: -i, -o")
 
 # checking received args for errors
 if not args.i.endswith(".ipa") and not args.i.endswith(".app"):

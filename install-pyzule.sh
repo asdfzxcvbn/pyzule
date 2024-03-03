@@ -62,6 +62,7 @@ if [ ! -d ${PZ_DIR}/CydiaSubstrate.framework ]; then
 fi
 
 echo "[*] installing pyzule.."
+curl -so ~/.config/pyzule/version.json https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/version.json
 sudo rm /usr/local/bin/pyzule &> /dev/null  # yeah this is totally required leave me alone
 sudo curl -so /usr/local/bin/pyzule https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py
 if [ "$OS" == "Linux" ]; then
