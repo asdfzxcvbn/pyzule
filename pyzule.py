@@ -82,18 +82,17 @@ if args.update:
         info = orjson.loads(f.read())
 
     new = orjson.loads(get(
-        "https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/version.json")
-    .content)
+        "https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/version.json").content)
 
     # guys please please please update to python 3.12 :pray:
     if new["internal"] > info["internal"]:
         print("[*] an update is available!")
         print(f"[*] update: {info['version']} -> {new['version']}")
         print(f"[*] link: https://github.com/asdfzxcvbn/pyzule/releases/tag/{new['version']}")
-        exit(0)
+        sys.exit(0)
     else:
         print("[?] no update detected")
-        exit(1)
+        sys.exit(1)
 
 # sanitize paths
 try:
