@@ -375,12 +375,12 @@ if args.f:
                     dylibs.add(filename)
                     id_injected.add(filename)
             for dirname in dirnames:
-                if dirname.endswith(".bundle") or (dirname.endswith(".framework") and not any(com in dirname.lower() for com in common)):
+                if dirname.endswith(".bundle") or dirname.endswith(".appex") or (dirname.endswith(".framework") and not any(com in dirname.lower() for com in common)):
                     src_path = os.path.join(dirpath, dirname)
                     dest_path = os.path.join(DYLIBS_PATH, dirname)
                     if not os.path.exists(dest_path):
                         move(src_path, dest_path)
-                    args.f.append(dirname)
+                    args.f.append(dest_path)
                     if ".framework" in dirname:
                         id_injected.add(dirname)
                 if "preferenceloader" in dirname.lower():
