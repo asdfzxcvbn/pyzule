@@ -4,7 +4,7 @@ ARCH=$(uname -m)
 if [[ $ARCH == *"iPhone"* ]]; then
     OS="iPhone"
     PATHPREFIX="/var/jb"
-    PYZULEURL="https://raw.githubusercontent.com/TbhLovers/pyzule-ios/main/pyzule-ios.py"
+    PYZULEURL="https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule-ios.py"
 else
     OS=$(uname)
     PYZULEURL="https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule.py"
@@ -71,7 +71,7 @@ fi
 if [ "$OS" == "iPhone" ] && [ ! -x "$(command -v insert_dylib)" ]; then
     # this *might* work? should test on both rootful/rootless
     echo "[*] installing insert_dylib.."
-    sudo curl -so ${PATHPREFIX}/usr/local/bin/insert_dylib http://cf.yippee.love/insert_dylib
+    sudo curl -so ${PATHPREFIX}/usr/local/bin/insert_dylib https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/deps/insert_dylib
     sudo chmod +x ${PATHPREFIX}/usr/local/bin/insert_dylib
 fi
 

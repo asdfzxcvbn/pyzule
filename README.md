@@ -99,6 +99,21 @@ options:
 </ol>
 </details>
 
+<details>
+<summary><b>jailbroken iOS instructions</b></summary>
+<br/>
+<ol>
+  <li>
+    install some packages like python and ldid and some shit idfk what u need tbh bro im lost please open an issue if u need help
+  </li>
+  <li>
+  install <code>pyzule</code>:
+
+  <pre lang="bash"><code>bash -c "$(curl https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/install-pyzule.sh)"</code></pre>
+  </li>
+</ol>
+</details>
+
 ## contributing
 
 ### code
