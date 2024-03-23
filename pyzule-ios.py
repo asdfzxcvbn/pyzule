@@ -115,7 +115,7 @@ if args.z:
     changing = vars(args)
     with ZipFile(args.z) as zf:
         with zf.open("config.json") as conf:
-            config = json.loads(conf.read())
+            config = json.load(conf)
         DOT_PATH = os.path.join(REAL_EXTRACT_DIR, "dot/")
         DOT_OTHER_PATH = os.path.join(REAL_EXTRACT_DIR, "dotother/")
 
