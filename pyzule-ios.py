@@ -80,7 +80,7 @@ if not args.i.endswith(".ipa") and not args.i.endswith(".app"):
     parser.error("the input file must be an ipa/app")
 elif not os.path.exists(args.i):
     parser.error(f"{args.i} does not exist")
-elif not any((args.z, args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.k, args.x, args.l, args.g)):
+elif not any((args.z, args.f, args.u, args.w, args.m, args.d, args.n, args.v, args.b, args.s, args.e, args.r, args.x, args.l, args.g)):
     parser.error("at least one option to modify the ipa must be present")
 elif args.p and args.t:
     # well, you know, you CAN, but i just dont wanna implement that.
@@ -90,8 +90,6 @@ elif args.m and any(char not in "0123456789." for char in args.m):
     parser.error(f"invalid OS version: {args.m}")
 elif args.z and not os.path.isfile(args.z):
     parser.error("the .pyzule file does not exist")
-elif args.k and not os.path.isfile(args.k):
-    parser.error("the image file does not exist")
 elif args.x and not os.path.isfile(args.x):
     parser.error("the entitlements file does not exist")
 elif args.l and not os.path.isfile(args.l):
@@ -250,7 +248,7 @@ try:
     BINARY_PATH = os.path.join(APP_PATH, BINARY).replace(" ", r"\ ")
 
     # checking encryption status
-    if b"cryptid 1" in run(f"otool -l {BINARY_PATH}", capture_output=True, check=True, shell=True).stdout:
+    if b"cryptid 1" in run(f"otool -l {BINARY_PATH}", capture_output=True, check=True, shell=True, executable="bash").stdout:
         print("[?] app is encrypted, the output app will only work for devices that have ever been logged in to your apple id")
         print("[?] find a decrypted ipa for everything to function normally")
 except IndexError:
@@ -276,7 +274,7 @@ if args.g:
     for plugin in appexes["p"] + appexes["e"]:
         plugin_exec = get_plist(f"{APP_PATH}/{plugin}/Info.plist", "CFBundleExecutable")
 
-        if b"cryptid 1" in run(f"otool -l '{APP_PATH}/{plugin}/{plugin_exec}'", shell=True, check=True, capture_output=True).stdout:
+        if b"cryptid 1" in run(f"otool -l '{APP_PATH}/{plugin}/{plugin_exec}'", shell=True, executable="bash", check=True, capture_output=True).stdout:
             rmtree(f"{APP_PATH}/{plugin}")
             removed.append(plugin_exec)
 
@@ -296,12 +294,12 @@ if args.f:
         HAS_ENTITLEMENTS = 0
 
     try:
-        run(f"ldid -e {BINARY_PATH} > {ENT_PATH}", shell=True, check=True, stderr=DEVNULL)
+        run(f"ldid -e {BINARY_PATH} > {ENT_PATH}", shell=True, executable="bash", check=True, stderr=DEVNULL)
         HAS_ENTITLEMENTS = 1 if os.path.getsize(ENT_PATH) > 0 else 0
     except Exception:
         pass  # pretty sure this will work for now lol !
     finally:
-        run(f"ldid -S {BINARY_PATH}", shell=True, check=True)
+        run(f"ldid -S {BINARY_PATH}", shell=True, executable="bash", check=True)
 
     DYLIBS_PATH = os.path.join(REAL_EXTRACT_DIR, "pyzule-inject")
     os.makedirs(DYLIBS_PATH, exist_ok=True)  # we'll copy everything we modify (dylibs) here to not mess with the original files
@@ -313,7 +311,7 @@ if args.f:
     if any(i.endswith(known) for i in args.f for known in (".deb", ".dylib", ".framework")):
         if inject_path:
             os.makedirs(os.path.join(APP_PATH, "Frameworks"), exist_ok=True)
-            run(f"install_name_tool -add_rpath @executable_path/Frameworks {BINARY_PATH}", shell=True, stdout=DEVNULL, stderr=DEVNULL)  # skipcq: PYL-W1510
+            run(f"install_name_tool -add_rpath @executable_path/Frameworks {BINARY_PATH}", shell=True, executable="bash", stdout=DEVNULL, stderr=DEVNULL)  # skipcq: PYL-W1510
         deb_counter = 0
 
     common = (
@@ -334,9 +332,9 @@ if args.f:
         os.makedirs(output)
         os.makedirs(os.path.join(output, "e"))
         if system == "Linux":
-            run(f"ar -x '{deb}' --output={output}", shell=True, check=True)
+            run(f"ar -x '{deb}' --output={output}", shell=True, executable="bash", check=True)
         else:
-            run(f"tar -xf '{deb}' -C {output}", shell=True, check=True)
+            run(f"tar -xf '{deb}' -C {output}", shell=True, executable="bash", check=True)
         data_tar = glob(os.path.join(output, "data.*"))[0]
         run(["tar", "-xf", data_tar, "-C", os.path.join(output, "e")], check=True)
         for dirpath, dirnames, filenames in os.walk(os.path.join(output, "e")):
@@ -385,9 +383,9 @@ if args.f:
             copyfile(dylib, actual_path)
         except FileNotFoundError:
             pass
-        run(f"ldid -S -M '{actual_path}'", shell=True, check=True)
-        run(f"install_name_tool -id '{inject_path_exec}/{dylib_bn}' '{actual_path}'", shell=True, stdout=DEVNULL, stderr=DEVNULL)  # skipcq: PYL-W1510
-        deps_temp = run(f"otool -L '{actual_path}'", shell=True, capture_output=True, text=True, check=True).stdout.strip().split("\n")[2:]
+        run(f"ldid -S -M '{actual_path}'", shell=True, executable="bash", check=True)
+        run(f"install_name_tool -id '{inject_path_exec}/{dylib_bn}' '{actual_path}'", shell=True, executable="bash", stdout=DEVNULL, stderr=DEVNULL)  # skipcq: PYL-W1510
+        deps_temp = run(f"otool -L '{actual_path}'", shell=True, executable="bash", capture_output=True, text=True, check=True).stdout.strip().split("\n")[2:]
         for ind, dep in enumerate(deps_temp):
             if "(architecture " in dep:
                 deps_temp = deps_temp[:ind]
@@ -406,7 +404,7 @@ if args.f:
             # cephei, cepheiui, and cepheiprefs.
             for common_name, common_path in deps_info.items():
                 if common_name in dep.lower():
-                    run(f"install_name_tool -change {dep} {inject_path_exec}/{common_path} '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
+                    run(f"install_name_tool -change {dep} {inject_path_exec}/{common_path} '{actual_path}'", shell=True, executable="bash", check=True, stdout=DEVNULL, stderr=DEVNULL)
                     needed.add(common_name)
                     if dep != f"{inject_path_exec}/{common_path}":
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{common_path}")
@@ -420,10 +418,10 @@ if args.f:
                         continue
 
                     if dep.endswith(".dylib"):
-                        run(f"install_name_tool -change {dep} {inject_path_exec}/{bn} '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
+                        run(f"install_name_tool -change {dep} {inject_path_exec}/{bn} '{actual_path}'", shell=True, executable="bash", check=True, stdout=DEVNULL, stderr=DEVNULL)
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{bn}")
                     elif ".framework" in dep:
-                        run(f"install_name_tool -change {dep} {inject_path_exec}/{bn}.framework/{bn} '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
+                        run(f"install_name_tool -change {dep} {inject_path_exec}/{bn}.framework/{bn} '{actual_path}'", shell=True, executable="bash", check=True, stdout=DEVNULL, stderr=DEVNULL)
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{bn}.framework/{bn}")
 
     for missing in needed:
@@ -445,7 +443,7 @@ if args.f:
             if args.p:
                 run("install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate " +
                 f"@executable_path/CydiaSubstrate.framework/CydiaSubstrate '{os.path.join(APP_PATH, inject_path)}/librocketbootstrap.dylib'",
-                shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)  # is this how im supposed to do it?
+                shell=True, executable="bash", check=True, stdout=DEVNULL, stderr=DEVNULL)  # is this how im supposed to do it?
                 print("[*] fixed dependency in librocketbootstrap.dylib: @rpath/CydiaSubstrate.framework/CydiaSubstrate -> @executable_path/CydiaSubstrate.framework/CydiaSubstrate")
             if os.path.exists(os.path.join(APP_PATH, inject_path, "CydiaSubstrate.framework")):
                 print("[*] existing CydiaSubstrate.framework found, replacing")
@@ -456,7 +454,7 @@ if args.f:
         elif args.t:
             run("install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate " +
             f"@rpath/Substitute.framework/Substitute '{os.path.join(APP_PATH, inject_path)}/librocketbootstrap.dylib'",
-            shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)  # repeating code? whaaat? nooo!!!
+            shell=True, executable="bash", check=True, stdout=DEVNULL, stderr=DEVNULL)  # repeating code? whaaat? nooo!!!
             print("[*] fixed dependency in librocketbootstrap.dylib: @rpath/CydiaSubstrate.framework/CydiaSubstrate -> @rpath/Substitute.framework/Substitute")
 
             if os.path.exists(os.path.join(APP_PATH, inject_path, "Substitute.framework")):
@@ -470,7 +468,7 @@ if args.f:
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(d))
         bn = os.path.basename(d)
         run(f"insert_dylib --inplace --no-strip-codesig --weak --all-yes '{inject_path_exec}/{bn}' {BINARY_PATH}",
-            shell=True, stdout=DEVNULL, check=True)
+            shell=True, executable="bash", stdout=DEVNULL, check=True)
         if os.path.exists(os.path.join(APP_PATH, inject_path, bn)):
             print(f"[*] existing {bn} found, replaced")
             os.remove(os.path.join(APP_PATH, inject_path, bn))
@@ -490,7 +488,7 @@ if args.f:
                     copytree(actual_path, os.path.join(APP_PATH, inject_path, bn))
                     framework_exec = get_plist(os.path.join(actual_path, "Info.plist"), "CFBundleExecutable")
                 run(f"insert_dylib --inplace --no-strip-codesig --weak --all-yes {inject_path_exec}/{bn}/{framework_exec} {BINARY_PATH}",
-                    shell=True, stdout=DEVNULL, check=True)
+                    shell=True, executable="bash", stdout=DEVNULL, check=True)
                 print(f"[*] injected {bn}")
             elif bn.endswith(".appex"):
                 copytree(tweak, os.path.join(APP_PATH, "PlugIns", bn))
@@ -514,7 +512,7 @@ if args.f:
             continue
 
     if HAS_ENTITLEMENTS:
-        run(f"ldid -S'{ENT_PATH}' {BINARY_PATH}", shell=True, check=True)
+        run(f"ldid -S'{ENT_PATH}' {BINARY_PATH}", shell=True, executable="bash", check=True)
         print("[*] restored app entitlements")
     changed = 1
 
@@ -600,7 +598,7 @@ dump_plist(PLIST_PATH, plist)
 
 if args.s:
     print("[*] fakesigning..")
-    run(f"ldid -S -M {BINARY_PATH}", shell=True, check=True)
+    run(f"ldid -S -M {BINARY_PATH}", shell=True, executable="bash", check=True)
     fs_counter = 1
 
     PATTERNS = (
@@ -615,9 +613,9 @@ if args.s:
     for fs in tfs:
         if any(s in fs for s in (".framework", ".appex")):
             FS_EXEC = get_plist(os.path.join(fs, "Info.plist"), "CFBundleExecutable")
-            run(f"ldid -S -M '{os.path.join(fs, FS_EXEC)}'", shell=True, check=True)
+            run(f"ldid -S -M '{os.path.join(fs, FS_EXEC)}'", shell=True, executable="bash", check=True)
         else:
-            run(f"ldid -S -M '{fs}'", shell=True, check=True)
+            run(f"ldid -S -M '{fs}'", shell=True, executable="bash", check=True)
         fs_counter += 1
     print(f"[*] fakesigned \033[1m{fs_counter}\033[0m items")
     changed = 1
@@ -625,7 +623,7 @@ if args.s:
 # sign app executable with entitlements provided
 if args.x:
     try:
-        run(f"ldid -S'{os.path.normpath(args.x)}' {BINARY_PATH}", shell=True, check=True)
+        run(f"ldid -S'{os.path.normpath(args.x)}' {BINARY_PATH}", shell=True, executable="bash", check=True)
         print("[*] signed binary with entitlements file")
         changed = 1
     except CalledProcessError:
@@ -642,7 +640,7 @@ if OUTPUT_IS_IPA:
     print(f"[*] generating ipa using compression level {args.c}..")
     if not INPUT_IS_IPA:
         os.makedirs("Payload")
-        run(f"mv '{INPUT_BASENAME}' 'Payload/{INPUT_BASENAME}'", shell=True, check=True)
+        run(f"mv '{INPUT_BASENAME}' 'Payload/{INPUT_BASENAME}'", shell=True, executable="bash", check=True)
     with ZipFile(os.path.basename(args.o), "w", ZIP_DEFLATED, compresslevel=args.c) as zf:
         for f in iglob("Payload/**", recursive=True):
             zf.write(f)
@@ -657,8 +655,8 @@ if OUTPUT_IS_IPA:
     move(os.path.join(EXTRACT_DIR, os.path.basename(args.o)), args.o)
     print(f"[*] generated ipa at {args.o}")
 else:
-    run(f"mv '{APP_PATH}' '{os.path.join(EXTRACT_DIR, os.path.basename(args.o))}'", shell=True, stderr=DEVNULL)  # skipcq: PYL-W1510
+    run(f"mv '{APP_PATH}' '{os.path.join(EXTRACT_DIR, os.path.basename(args.o))}'", shell=True, executable="bash", stderr=DEVNULL)  # skipcq: PYL-W1510
     if os.path.exists(args.o):
         rmtree(args.o)
-    run(f"mv '{os.path.join(EXTRACT_DIR, os.path.basename(args.o))}' '{args.o}'", shell=True, check=True)
+    run(f"mv '{os.path.join(EXTRACT_DIR, os.path.basename(args.o))}' '{args.o}'", shell=True, executable="bash", check=True)
     print(f"[*] generated app at {args.o}")
