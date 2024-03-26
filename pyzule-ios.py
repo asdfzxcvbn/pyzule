@@ -328,14 +328,11 @@ if args.f:
         if not deb.endswith(".deb"):
             continue
         bn = os.path.basename(deb)
-        output = os.path.join(EXTRACT_DIR, str(deb_counter))
-        os.makedirs(output)
+        os.makedirs((output := os.path.join(EXTRACT_DIR, str(deb_counter))))
+        os.chdir(output)
         os.makedirs(os.path.join(output, "e"))
-        if system == "Linux":
-            run(f"ar -x '{deb}' --output={output}", shell=True, executable="bash", check=True)
-        else:
-            run(f"tar -xf '{deb}' -C {output}", shell=True, executable="bash", check=True)
-        data_tar = glob(os.path.join(output, "data.*"))[0]
+        run(f"ar -x '{os.path.join(WORKING_DIR, deb)}'", shell=True, executable="bash", check=True)
+        data_tar = glob("data.*")[0]
         run(["tar", "-xf", data_tar, "-C", os.path.join(output, "e")], check=True)
         for dirpath, dirnames, filenames in os.walk(os.path.join(output, "e")):
             for filename in filenames:
@@ -360,6 +357,7 @@ if args.f:
         print(f"[*] extracted {bn}")
         deb_counter += 1
 
+    os.chdir(WORKING_DIR)  # in case we extracted debs
     args.f = set(args.f)
     needed = set()
     deps_info = {
