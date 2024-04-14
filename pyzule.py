@@ -135,7 +135,7 @@ if os.path.exists(args.o):
         print("[>] quitting.")
         sys.exit()
 EXTRACT_DIR = f".pyzule-{time()}"
-os.makedirs((REAL_EXTRACT_DIR := os.path.join(os.getcwd(), EXTRACT_DIR)))
+REAL_EXTRACT_DIR = os.path.join(os.getcwd(), EXTRACT_DIR)
 
 # i never thought i would write code this bad. im tired.
 # oh yeah btw this barely works for shit LMFAO
@@ -188,6 +188,8 @@ if args.f:
 
     if args.t:
         print("[*] will use substitute instead of substrate")
+
+os.makedirs(REAL_EXTRACT_DIR)
 
 
 def get_plist(path, entry=None):
