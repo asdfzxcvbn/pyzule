@@ -54,6 +54,13 @@ if [ ! -x "$(command -v ldid)" ]; then
     sudo chmod +x ${PATHPREFIX}/usr/local/bin/ldid
 fi
 
+# ldid error doesnt seem to happen on iOS
+if [ ! -x "$(command -v ipsw)" ] && [ "$OS" != "iPhone" ]; then
+    echo "[*] installing ipsw.."
+    sudo curl -so ${PATHPREFIX}/usr/local/bin/ipsw https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/deps/ipsw_${OS}_$ARCH
+    sudo chmod +x ${PATHPREFIX}/usr/local/bin/ipsw
+fi
+
 # install_name_tool and otool should only be installed here on linux
 if [ ! -x "$(command -v otool)" ]; then
     echo "[*] installing otool.."

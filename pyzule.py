@@ -545,7 +545,10 @@ if args.f:
 
     executable.write(LIEF_BINARY_PATH)
     if HAS_ENTITLEMENTS:
-        run(f"ldid -S'{ENT_PATH}' {BINARY_PATH}", shell=True, check=True)
+        try:
+            run(f"ldid -S'{ENT_PATH}' {BINARY_PATH}", shell=True, check=True, stderr=DEVNULL)
+        except Exception:
+            run(f"ipsw m sn -fae '{ENT_PATH}' {BINARY_PATH}", shell=True, check=True, stderr=DEVNULL)
         print("[*] restored app entitlements")
     changed = 1
 
@@ -667,7 +670,9 @@ dump_plist(PLIST_PATH, plist)
 
 if args.s:
     print("[*] fakesigning..")
-    run(f"ldid -S -M {BINARY_PATH}", shell=True, check=True)
+    # also legacy, see line ~550
+    # run(f"ldid -S -M {BINARY_PATH}", shell=True, check=True)
+    run(f"ipsw m sn -fa {BINARY_PATH}", shell=True, check=True, stderr=DEVNULL)
     fs_counter = 1
 
     PATTERNS = (
@@ -679,12 +684,19 @@ if args.s:
     )
     tfs = sum((glob(os.path.join(APP_PATH, p)) for p in PATTERNS), [])
 
+    # what a pain, is this literally just an ubuntu error?
     for fs in tfs:
         if any(s in fs for s in (".framework", ".appex")):
             FS_EXEC = get_plist(os.path.join(fs, "Info.plist"), "CFBundleExecutable")
-            run(f"ldid -S -M '{os.path.join(fs, FS_EXEC)}'", shell=True, check=True)
+            try:
+                run(f"ldid -S -M '{os.path.join(fs, FS_EXEC)}'", shell=True, check=True)
+            except Exception:
+                run(f"ipsw m sn -fa '{os.path.join(fs, FS_EXEC)}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
         else:
-            run(f"ldid -S -M '{fs}'", shell=True, check=True)
+            try:
+                run(f"ldid -S -M '{fs}'", shell=True, check=True)
+            except Exception:
+                run(f"ipsw m sn -fa '{fs}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
         fs_counter += 1
     print(f"[*] fakesigned \033[1m{fs_counter}\033[0m items")
     changed = 1
@@ -692,7 +704,8 @@ if args.s:
 # sign app executable with entitlements provided
 if args.x:
     try:
-        run(f"ldid -S'{os.path.normpath(args.x)}' {BINARY_PATH}", shell=True, check=True)
+        run(f"ipsw m sn -fae '{os.path.normpath(args.x)}' {BINARY_PATH}", shell=True, check=True,
+            stdout=DEVNULL)
         print("[*] signed binary with entitlements file")
         changed = 1
     except CalledProcessError:
