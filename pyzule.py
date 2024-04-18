@@ -1,4 +1,4 @@
-#!/home/chris/.config/pyzule/venv/bin/python
+#!/usr/bin/env python3
 # pyzule! pretty badly written.. but, it works! github.com/asdfzxcvbn/pyzule
 import os
 import sys
