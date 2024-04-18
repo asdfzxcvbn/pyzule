@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/home/chris/.config/pyzule/venv/bin/python
 # pyzule! pretty badly written.. but, it works! github.com/asdfzxcvbn/pyzule
 import os
 import sys
@@ -189,7 +189,7 @@ if args.f:
     if args.t:
         print("[*] will use substitute instead of substrate")
 
-os.makedirs(REAL_EXTRACT_DIR)
+os.makedirs(REAL_EXTRACT_DIR, exist_ok=True)
 
 
 def get_plist(path, entry=None):

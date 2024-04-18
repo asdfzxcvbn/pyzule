@@ -161,7 +161,7 @@ if args.f:
     if args.t:
         print("[*] will use substitute instead of substrate")
 
-os.makedirs(REAL_EXTRACT_DIR)
+os.makedirs(REAL_EXTRACT_DIR, exist_ok=True)
 
 
 def get_plist(path, entry=None):
