@@ -350,7 +350,7 @@ if args.f:
         "substitute.framework", "libhdev.framework"
     )
     dylibs = {d for d in args.f if d.endswith(".dylib") and not any(com in d.lower() for com in common)}
-    id_injected = {f for f in args.f if ".framework" in f and not any(com in f.lower() for com in common)}
+    id_injected = {f for f in args.f if ".framework" in f}
     id_injected.update(dylibs)
 
     # extracting all debs
@@ -513,7 +513,7 @@ if args.f:
         bn = os.path.basename(tweak)
         actual_path = os.path.join(DYLIBS_PATH, os.path.basename(tweak))
         try:
-            if bn.endswith(".framework") and "cydiasubstrate" not in bn.lower():
+            if bn.endswith(".framework"):
                 try:
                     copytree(tweak, os.path.join(APP_PATH, inject_path, bn))
                     framework_exec = get_plist(os.path.join(tweak, "Info.plist"), "CFBundleExecutable")
