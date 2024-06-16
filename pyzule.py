@@ -686,13 +686,13 @@ dump_plist(PLIST_PATH, plist)
 if args.s:
     print("[*] fakesigning..")
     fs_counter = 1
-    thin_counter = 1
 
     # yeah i know it's inefficient but this is just gonna be
     # a quick implementation of thinning
 
     if args.q:
         thin(BINARY_PATH)
+        thin_counter = 1
 
     try:
         run(f"ldid -S -M {BINARY_PATH}", shell=True, check=True, stderr=DEVNULL)
@@ -736,8 +736,10 @@ if args.s:
                 run(f"ipsw m sn -fa '{fs}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
         fs_counter += 1
     print(f"[*] fakesigned \033[1m{fs_counter}\033[0m items")
-    print(f"[*] thinned \033[1m{fs_counter}\033[0m items")
     changed = 1
+
+    if args.q:
+        print(f"[*] thinned \033[1m{thin_counter}\033[0m items")
 
 # sign app executable with entitlements provided
 if args.x:
