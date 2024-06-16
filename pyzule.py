@@ -8,9 +8,9 @@ from atexit import register
 from platform import system
 from glob import glob, iglob
 from plistlib import load, dump
-from shutil import rmtree, copyfile, copytree, move
 from zipfile import ZipFile, BadZipFile, ZIP_DEFLATED
 from subprocess import run, DEVNULL, CalledProcessError
+from shutil import rmtree, copyfile, copytree, move, which
 
 import lief
 import orjson
@@ -72,6 +72,8 @@ parser.add_argument("-p", action="store_true",
                     help="inject into @executable_path")
 parser.add_argument("-t", action="store_true",
                     help="use substitute instead of substrate")
+parser.add_argument("-q", action="store_true",  # please help i'm running out of reasonable flags
+                    help="thin all binaries to arm64")
 parser.add_argument("--update", action="store_true",
                     help="check for updates")
 args = parser.parse_args()
@@ -122,6 +124,8 @@ elif args.x and not os.path.isfile(args.x):
     parser.error("the entitlements file does not exist")
 elif args.l and not os.path.isfile(args.l):
     parser.error("the plist to merge does not exist")
+elif args.q and not args.s:
+    parser.error("thinning relies on -s, sorry not sorry")
 
 # further checking (no errors, just confirmation)
 if not (args.o.endswith(".app") or args.o.endswith(".ipa")):
@@ -189,6 +193,10 @@ if args.f:
     if args.t:
         print("[*] will use substitute instead of substrate")
 
+if args.q and which("llvm-lipo") is None:
+    print("[!] thinning relies on llvm (llvm-lipo command)")
+    sys.exit(1)
+
 os.makedirs(REAL_EXTRACT_DIR, exist_ok=True)
 
 
@@ -237,6 +245,13 @@ def remove_dirs(app_path, removed, *names):
         changed = 1
     else:
         print(f"[?] {removed} not present")
+
+
+def thin(path):
+    run(
+        ["llvm-lipo", "-thin", "arm64", path, "-output", path],
+        check=True
+    )
 
 
 @register
@@ -670,10 +685,19 @@ dump_plist(PLIST_PATH, plist)
 
 if args.s:
     print("[*] fakesigning..")
-    # also legacy, see line ~550
-    # run(f"ldid -S -M {BINARY_PATH}", shell=True, check=True)
-    run(f"ipsw m sn -fa {BINARY_PATH}", shell=True, check=True, stderr=DEVNULL)
     fs_counter = 1
+    thin_counter = 1
+
+    # yeah i know it's inefficient but this is just gonna be
+    # a quick implementation of thinning
+
+    if args.q:
+        thin(BINARY_PATH)
+
+    try:
+        run(f"ldid -S -M {BINARY_PATH}", shell=True, check=True, stderr=DEVNULL)
+    except Exception:
+        run(f"ipsw m sn -fa {BINARY_PATH}", shell=True, check=True, stderr=DEVNULL)
 
     PATTERNS = (
         "*.dylib", "*.framework",
@@ -688,17 +712,31 @@ if args.s:
     for fs in tfs:
         if any(s in fs for s in (".framework", ".appex")):
             FS_EXEC = get_plist(os.path.join(fs, "Info.plist"), "CFBundleExecutable")
+            FS_EXECP = os.path.join(fs, FS_EXEC)
+
+            if args.q:
+                thin(FS_EXECP)
+                thin_counter += 1
+
             try:
-                run(f"ldid -S -M '{os.path.join(fs, FS_EXEC)}'", shell=True, check=True)
+                # i don't even know why i'm using shell=True anymore
+                # let's hope past me was doing it for a reason
+                run(f"ldid -S -M '{FS_EXECP}'", shell=True, check=True)
             except Exception:
                 run(f"ipsw m sn -fa '{os.path.join(fs, FS_EXEC)}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
         else:
+
+            if args.q:
+                thin(fs)
+                thin_counter += 1
+
             try:
                 run(f"ldid -S -M '{fs}'", shell=True, check=True)
             except Exception:
                 run(f"ipsw m sn -fa '{fs}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
         fs_counter += 1
     print(f"[*] fakesigned \033[1m{fs_counter}\033[0m items")
+    print(f"[*] thinned \033[1m{fs_counter}\033[0m items")
     changed = 1
 
 # sign app executable with entitlements provided
