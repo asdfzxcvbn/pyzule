@@ -247,11 +247,15 @@ def remove_dirs(app_path, removed, *names):
         print(f"[?] {removed} not present")
 
 
-def thin(path):
-    run(
+def thin(path) -> bool:  # successful
+    proc = run(
         ["llvm-lipo", "-thin", "arm64", path, "-output", path],
-        check=True
+        stderr=DEVNULL
     )
+
+    if proc.returncode == 0:
+        return True
+    return False
 
 
 @register
@@ -686,13 +690,13 @@ dump_plist(PLIST_PATH, plist)
 if args.s:
     print("[*] fakesigning..")
     fs_counter = 1
+    thin_counter = 0
 
     # yeah i know it's inefficient but this is just gonna be
     # a quick implementation of thinning
 
     if args.q:
-        thin(BINARY_PATH)
-        thin_counter = 1
+        thin_counter += 1 if thin(BINARY_PATH) else 0
 
     try:
         run(f"ldid -S -M {BINARY_PATH}", shell=True, check=True, stderr=DEVNULL)
@@ -715,8 +719,7 @@ if args.s:
             FS_EXECP = os.path.join(fs, FS_EXEC)
 
             if args.q:
-                thin(FS_EXECP)
-                thin_counter += 1
+                thin_counter += 1 if thin(FS_EXECP) else 0
 
             try:
                 # i don't even know why i'm using shell=True anymore
@@ -727,8 +730,7 @@ if args.s:
         else:
 
             if args.q:
-                thin(fs)
-                thin_counter += 1
+                thin_counter += 1 if thin(fs) else 0
 
             try:
                 run(f"ldid -S -M '{fs}'", shell=True, check=True)
