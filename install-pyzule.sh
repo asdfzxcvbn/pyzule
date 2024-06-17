@@ -83,7 +83,7 @@ if [ "$OS" == "iPhone" ] && [ ! -x "$(command -v insert_dylib)" ]; then
 fi
 
 # create (or update) hidden dir
-if [ ! -d ${PZ_DIR}/CydiaSubstrate.framework ]; then
+if [ ! -d ${PZ_DIR}/Orion.framework ]; then
     echo "[*] downloading dependencies.."
     curl -so /tmp/zxcvbn_dir.zip https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/zxcvbn_dir.zip
     unzip -o /tmp/zxcvbn_dir.zip -d ${PZ_DIR} > /dev/null

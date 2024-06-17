@@ -8,7 +8,7 @@ open an issue for any feature requests!
 
 - **generate and use [shareable `.pyzule` files](https://github.com/asdfzxcvbn/pyzule-gen) to configure IPAs!**
 - inject deb, dylib, framework, bundle, and appex files and automatically fix dependencies when possible
-- automatically fix dependencies on CydiaSubstrate, librocketbootstrap, libmryipc, libhdev, and Cephei*
+- automatically fix dependencies on CydiaSubstrate, Cephei*, Orion, librocketbootstrap, libmryipc, and libhdev
 - copy any unknown file/folder types to app root
 - use a custom compression level
 - change app name, version, and bundle id

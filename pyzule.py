@@ -418,7 +418,8 @@ if args.f:
         "cephei.": "Cephei.framework/Cephei",
         "cepheiui.": "CepheiUI.framework/CepheiUI",
         "cepheiprefs.": "CepheiPrefs.framework/CepheiPrefs",
-        "libhdev.": "libhdev.framework/libhdev"
+        "libhdev.": "libhdev.framework/libhdev",
+        "orion.": "Orion.framework/Orion"
     }
 
     if args.t:
@@ -472,6 +473,10 @@ if args.f:
                     elif ".framework" in dep:
                         run(f"install_name_tool -change {dep} {inject_path_exec}/{bn}.framework/{bn} '{actual_path}'", shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)
                         print(f"[*] fixed dependency in {os.path.basename(dylib)}: {dep} -> {inject_path_exec}/{bn}.framework/{bn}")
+
+    # i'd rather do this than just check frameworks for dependencies.
+    if "orion." in needed:
+        needed.add("substrate.")
 
     for missing in needed:
         real_dep_name = deps_info[missing].split("/")[0]
