@@ -119,18 +119,7 @@ options:
 </details>
 
 ## contributing
-
-### code
 if you'd like to improve `pyzule`, then fork this repo and open a PR to the `dev` branch. thank you!
-
-### money
-if you want to support [my work](https://github.com/asdfzxcvbn?tab=repositories), you can donate me some monero! any donations are GREATLY appreciated. :)
-
-xmr address: `82m19F4yb15UQbJUrxxmzJ3fvKyjjqJM55gv8qCp2gSTgo3D8avzNJJQ6tREGVKA7VUUJE6hPKg8bKV6tTXKhDDx75p6vGj`
-
-qr code:
-
-![qr](https://user-images.githubusercontent.com/109937991/227786784-28eaf0a1-9d17-4fc5-8c1c-f017fd62cfad.png)
 
 ## credits
 `pyzule` wouldn't be possible if it wasn't for the work of some marvelous people. HUGE thanks to:
