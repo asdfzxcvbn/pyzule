@@ -24,6 +24,7 @@ open an issue for any feature requests!
 - merge a plist into the app's existing Info.plist
 - inject into @executable_path instead of @rpath
 - use substitute (open source) instead of CydiaSubstrate
+- use ellekit (open source) instead of CydiaSubstrate
 
 ## usage
 you can get usage info with `pyzule -h`.
@@ -59,6 +60,7 @@ options:
   -g                    remove encrypted extensions
   -p                    inject into @executable_path
   -t                    use substitute instead of substrate
+  -j                    use ellekit instead of substrate
   -q                    thin all binaries to arm64
   --update              check for updates
 ```
