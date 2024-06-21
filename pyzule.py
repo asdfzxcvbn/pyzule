@@ -433,6 +433,9 @@ if args.f:
     if args.t:
         deps_info["substrate."] = "Substitute.framework/Substitute"
 
+    if args.t:
+        deps_info["substrate."] = "libellekit.dylib"
+
     # remove codesign + fix all dependencies
     for dylib in dylibs:
         dylib_bn = os.path.basename(dylib)
@@ -501,7 +504,7 @@ if args.f:
     # yeah yeah, i know this fails if -p is used and dependencies need both substrate and rocketbootstrap,
     # but why would **anyone** be using -p in the first place? i dont see a reason to fix it.
     if "librocketbootstrap." in needed and "substrate." not in needed:
-        if args.p or not args.t:
+        if args.p or not args.t or not args.j:
             if args.p:
                 run("install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate " +
                 f"@executable_path/CydiaSubstrate.framework/CydiaSubstrate '{os.path.join(APP_PATH, inject_path)}/librocketbootstrap.dylib'",
@@ -525,6 +528,18 @@ if args.f:
 
             copytree(os.path.join(USER_DIR, "Substitute.framework"), os.path.join(APP_PATH, inject_path, "Substitute.framework"))
             print("[*] auto-injected Substitute.framework")
+        elif args.j:
+            run("install_name_tool -change @rpath/CydiaSubstrate.framework/CydiaSubstrate " +
+            f"@rpath/libellekit.dylib '{os.path.join(APP_PATH, inject_path)}/librocketbootstrap.dylib'",
+            shell=True, check=True, stdout=DEVNULL, stderr=DEVNULL)  # repeating code? whaaat? nooo!!!
+            print("[*] fixed dependency in librocketbootstrap.dylib: @rpath/CydiaSubstrate.framework/CydiaSubstrate -> @rpath/libellekit.dylib")
+
+            if os.path.exists(os.path.join(APP_PATH, inject_path, "libellekit.dylib")):
+                print("[*] existing libellekit.dylib found, replacing")
+                rmtree(os.path.join(APP_PATH, inject_path, "libellekit.dylib"))
+
+            copytree(os.path.join(USER_DIR, "libellekit.dylib"), os.path.join(APP_PATH, inject_path, "libellekit.dylib"))
+            print("[*] auto-injected libellekit.dylib")
 
     lief.logging.disable()
     LIEF_BINARY_PATH = BINARY_PATH.replace("\\ ", " ")
