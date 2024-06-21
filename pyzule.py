@@ -118,7 +118,7 @@ elif args.p and args.t:
     parser.error("sorry, you can't use substitute while injecting into @executable_path")
 elif args.p and args.j:
     # idk if it works, ask asdfzxcvbn???
-    print("[*] Breakage probably incoming, aka using Ellekit and injecting into @executable_path")
+    parser.error("sorry, you can't use ellekit while injecting into @executable_path")
 elif args.m and any(char not in "0123456789." for char in args.m):
     parser.error(f"invalid OS version: {args.m}")
 elif args.z and not os.path.isfile(args.z):
