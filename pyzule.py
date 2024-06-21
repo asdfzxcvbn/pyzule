@@ -72,6 +72,8 @@ parser.add_argument("-p", action="store_true",
                     help="inject into @executable_path")
 parser.add_argument("-t", action="store_true",
                     help="use substitute instead of substrate")
+parser.add_argument("-j", action="store_true",
+                    help="use ellekit instead of substrate")
 parser.add_argument("-q", action="store_true",  # please help i'm running out of reasonable flags
                     help="thin all binaries to arm64")
 parser.add_argument("--update", action="store_true",
@@ -114,6 +116,9 @@ elif args.p and args.t:
     # well, you know, you CAN, but i just dont wanna implement that.
     # i would remove -p altogether but i already spent a considerable amount of time on it.
     parser.error("sorry, you can't use substitute while injecting into @executable_path")
+elif args.p and args.j:
+    # idk if it works, ask asdfzxcvbn???
+    print("[*] Breakage probably incoming, aka using Ellekit and injecting into @executable_path")
 elif args.m and any(char not in "0123456789." for char in args.m):
     parser.error(f"invalid OS version: {args.m}")
 elif args.z and not os.path.isfile(args.z):
@@ -192,6 +197,9 @@ if args.f:
 
     if args.t:
         print("[*] will use substitute instead of substrate")
+
+    if args.j:
+        print("[*] will use ellekit instead of substrate")
 
 if args.q and which("llvm-lipo") is None:
     print("[!] thinning relies on llvm (llvm-lipo command)")
