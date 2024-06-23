@@ -751,7 +751,7 @@ if args.s:
 # sign app executable with entitlements provided
 if args.x:
     try:
-        run(f"ipsw m sn -fae '{os.path.normpath(args.x)}' {BINARY_PATH}", shell=True, check=True,
+        run(f"ldid -S'{os.path.normpath(args.x)}' {BINARY_PATH}", shell=True, check=True,
             stdout=DEVNULL)
         print("[*] signed binary with entitlements file")
         changed = 1
