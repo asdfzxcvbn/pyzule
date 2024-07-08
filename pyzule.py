@@ -601,15 +601,25 @@ if args.d:
     change_plist("enabled documents support", "documents support was already enabled",
                 plist, True, "UISupportsDocumentBrowser", "UIFileSharingEnabled")
 
-# change app name
-if args.n:
-    change_plist(f"changed app name to {args.n}", f"app name was already {args.n}",
-                plist, args.n, "CFBundleDisplayName", "CFBundleName")
-
 # change app version
 if args.v:
     change_plist(f"changed app version to {args.v}", f"app version was already {args.v}",
                 plist, args.v, "CFBundleShortVersionString", "CFBundleVersion")
+
+# change app name
+if args.n:
+    change_plist(f"changed app name to {args.n}", f"app name was already {args.n}",
+                plist, args.n, "CFBundleDisplayName", "CFBundleName")
+    
+    # i literally just stole this from bundle id change lol
+    for ext in (LPS := glob(os.path.join(APP_PATH, "*.lproj"))):
+        lp_plist = get_plist((ext_plist := os.path.join(ext, "InfoPlist.strings")))
+        lp_plist["CFBundleDisplayName"] = args.n
+        lp_plist["CFBundleName"] = args.n
+        dump_plist(ext_plist, lp_plist)
+    if LPS:
+        print("[*] changed localized display names")
+        changed = 1  # i don't even know if this is required anymore but idc
 
 # change app bundle id
 if args.b:
