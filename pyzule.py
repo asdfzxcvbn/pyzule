@@ -610,14 +610,19 @@ if args.v:
 if args.n:
     change_plist(f"changed app name to {args.n}", f"app name was already {args.n}",
                 plist, args.n, "CFBundleDisplayName", "CFBundleName")
-    
+    real_count = 0
+
     # i literally just stole this from bundle id change lol
-    for ext in (LPS := glob(os.path.join(APP_PATH, "*.lproj"))):
-        lp_plist = get_plist((ext_plist := os.path.join(ext, "InfoPlist.strings")))
-        lp_plist["CFBundleDisplayName"] = args.n
-        lp_plist["CFBundleName"] = args.n
-        dump_plist(ext_plist, lp_plist)
-    if LPS:
+    for ext in glob(os.path.join(APP_PATH, "*.lproj")):
+        try:
+            lp_plist = get_plist((ext_plist := os.path.join(ext, "InfoPlist.strings")))
+            lp_plist["CFBundleDisplayName"] = args.n
+            lp_plist["CFBundleName"] = args.n
+            dump_plist(ext_plist, lp_plist)
+            real_count += 1
+        except Exception:
+            pass  # file might not exist
+    if real_count:
         print("[*] changed localized display names")
         changed = 1  # i don't even know if this is required anymore but idc
 
