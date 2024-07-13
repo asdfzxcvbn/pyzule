@@ -104,7 +104,7 @@ options:
 </details>
 
 <details>
-<summary><b>jailbroken iOS instructions</b></summary>
+<summary><b>jailbroken iOS instructions (rootless only)</b></summary>
 <br/>
 <ol>
   <li>
