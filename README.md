@@ -108,7 +108,7 @@ options:
 <br/>
 <ol>
   <li>
-    install some packages like python and ldid and some shit idfk what u need tbh bro im lost please open an issue if u need help
+    iirc you only need some packages like python, ldid, and odcctools and probably not anything else but please open an issue if u need help
   </li>
   <li>
   install <code>pyzule</code>:

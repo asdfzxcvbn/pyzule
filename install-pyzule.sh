@@ -1,8 +1,8 @@
 #!/bin/bash
 ARCH=$(uname -m)
 
-if [[ $ARCH == *"iPhone"* ]]; then
-    OS="iPhone"
+if [[ $ARCH == *"iPhone"* ]] || [[ $ARCH == *"iPad"* ]]; then
+    OS="iOS"
     PATHPREFIX="/var/jb"
     PYZULEURL="https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/pyzule-ios.py"
 else
@@ -26,7 +26,7 @@ else
     echo "[!] couldn't find \"python\" nor \"python3\" installed."
     if [ "$OS" == "Linux" ]; then
         echo "[*] try \"sudo apt install python3 python3-pip python3-venv\" or \"sudo pacman -S python python-pip\" depending on your distro."
-    elif [ "$OS" == "iPhone" ]; then
+    elif [ "$OS" == "iOS" ]; then
         echo "[*] try looking for python in your package manager!"
     else
         echo "[*] for installation instructions, head over to python.org !"
@@ -39,10 +39,10 @@ if [ ! -d ${PZ_DIR}/venv ]; then
     echo "[*] installing required pip libraries.."
     $PYTHON -m venv ${PZ_DIR}/venv > /dev/null
 
-    if [ ! "$OS" == "iPhone" ]; then
+    if [ ! "$OS" == "iOS" ]; then
         ${PZ_DIR}/venv/bin/pip install -U Pillow orjson requests lief &> /dev/null
     fi
-elif [ ! "$OS" == "iPhone" ] && [ ! -f ${PZ_DIR}/requests_upd ]; then
+elif [ ! "$OS" == "iOS" ] && [ ! -f ${PZ_DIR}/requests_upd ]; then
     touch ${PZ_DIR}/requests_upd
     echo "[*] installing new dependencies.."
     ${PZ_DIR}/venv/bin/pip install -U orjson requests &> /dev/null
@@ -55,7 +55,7 @@ if [ ! -x "$(command -v ldid)" ]; then
 fi
 
 # ldid error doesnt seem to happen on iOS
-if [ ! -x "$(command -v ipsw)" ] && [ "$OS" != "iPhone" ]; then
+if [ ! -x "$(command -v ipsw)" ] && [ "$OS" != "iOS" ]; then
     echo "[*] installing ipsw.."
     sudo curl -so ${PATHPREFIX}/usr/local/bin/ipsw https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/deps/ipsw_${OS}_$ARCH
     sudo chmod +x ${PATHPREFIX}/usr/local/bin/ipsw
@@ -75,7 +75,7 @@ if [ ! -x "$(command -v install_name_tool)" ]; then
 fi
 
 # lief is used on desktop, insert_dylib on iOS, so fetch that
-if [ "$OS" == "iPhone" ] && [ ! -x "$(command -v insert_dylib)" ]; then
+if [ "$OS" == "iOS" ] && [ ! -x "$(command -v insert_dylib)" ]; then
     # this *might* work? should test on both rootful/rootless
     echo "[*] installing insert_dylib.."
     sudo curl -so ${PATHPREFIX}/usr/local/bin/insert_dylib https://raw.githubusercontent.com/asdfzxcvbn/pyzule/main/deps/insert_dylib
