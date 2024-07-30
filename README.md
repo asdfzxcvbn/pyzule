@@ -120,7 +120,7 @@ options:
 
 ## compile the gui 
 ###### for linux
-`gcc  -o final_pyzule finall_pyzule_gtk.c pkg-config --libs gtk+-3.0`
+```gcc  -o final_pyzule finall_pyzule_gtk.c pkg-config --libs gtk+-3.0```
 ###### for mac // add later
 ###### for windows // add later
 
