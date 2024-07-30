@@ -118,6 +118,12 @@ options:
 </ol>
 </details>
 
+## compile the gui 
+###### for linux
+`gcc  -o final_pyzule finall_pyzule_gtk.c pkg-config --libs gtk+-3.0`
+###### for mac // add later
+###### for windows // add later
+
 ## contributing
 if you'd like to improve `pyzule`, then fork this repo and open a PR to the `dev` branch. thank you!
 
